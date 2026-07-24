@@ -217,30 +217,99 @@ export const deleteResumeAnalysis = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// ---------- Interview: attempts guard ----------
+const MAX_ATTEMPTS = 2;
+const WINDOW_HOURS = 24;
+
+export const getInterviewAttempts = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const since = new Date(Date.now() - WINDOW_HOURS * 3600_000).toISOString();
+    const { data, error } = await context.supabase
+      .from("assessment_results")
+      .select("created_at")
+      .eq("kind", "interview")
+      .gte("created_at", since)
+      .order("created_at", { ascending: true });
+    if (error) throw new Error(error.message);
+    const used = data?.length ?? 0;
+    const first = data?.[0]?.created_at ?? null;
+    return {
+      used,
+      max: MAX_ATTEMPTS,
+      remaining: Math.max(0, MAX_ATTEMPTS - used),
+      locked: used >= MAX_ATTEMPTS,
+      unlocksAt: first ? new Date(new Date(first).getTime() + WINDOW_HOURS * 3600_000).toISOString() : null,
+    };
+  });
+
 // ---------- Interview: questions + scoring ----------
 export const generateInterviewQuestions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown): { role: string } => {
-    const role = (data as { role?: unknown })?.role;
-    if (typeof role !== "string" || role.trim().length < 2) throw new Error("role required");
-    return { role: role.slice(0, 120) };
+  .inputValidator((data: unknown): { role: string; difficulty: string } => {
+    const d = data as { role?: unknown; difficulty?: unknown };
+    if (typeof d.role !== "string" || d.role.trim().length < 2) throw new Error("role required");
+    const allowed = ["entry", "mid", "senior"];
+    const difficulty = typeof d.difficulty === "string" && allowed.includes(d.difficulty) ? d.difficulty : "mid";
+    return { role: d.role.slice(0, 120), difficulty };
   })
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    // Hard lockout is enforced here too, so the UI cannot be bypassed.
+    const since = new Date(Date.now() - WINDOW_HOURS * 3600_000).toISOString();
+    const { count } = await context.supabase
+      .from("assessment_results")
+      .select("id", { count: "exact", head: true })
+      .eq("kind", "interview")
+      .gte("created_at", since);
+    if ((count ?? 0) >= MAX_ATTEMPTS) {
+      throw new Error("Attempt limit reached. You can take 2 mock interviews per 24 hours.");
+    }
+
+    const level =
+      data.difficulty === "entry"
+        ? "entry-level (0-2 years); focus on fundamentals, motivation and learning ability"
+        : data.difficulty === "senior"
+          ? "senior/lead (7+ years); focus on system-level tradeoffs, ownership, conflict, and mentoring"
+          : "mid-level (3-6 years); balance depth of execution with collaboration";
+
     const raw = await callGemini(
-      `Generate 5 realistic interview questions for a candidate applying to a "${data.role}" role. Mix behavioral and technical. Return JSON: {"questions":["q1","q2","q3","q4","q5"]}`,
+      `Generate 5 realistic interview questions for a candidate applying to a "${data.role}" role at ${level}.
+Include at least 3 behavioral questions that can be answered with the STAR framework, and 2 role-specific technical/domain questions.
+Return JSON: {"questions":[{"text":"...","type":"behavioral|technical"}, ... 5 items]}`,
     );
-    const parsed = safeJson<{ questions: string[] }>(raw);
+    const parsed = safeJson<{ questions: Array<{ text: string; type: string } | string> }>(raw);
     if (!parsed?.questions?.length) throw new Error("Could not generate questions. Try again.");
-    return { questions: parsed.questions.slice(0, 5) };
+    const questions = parsed.questions.slice(0, 5).map((q) =>
+      typeof q === "string"
+        ? { text: q, type: "behavioral" }
+        : { text: String(q.text ?? ""), type: q.type === "technical" ? "technical" : "behavioral" },
+    );
+    return { questions, difficulty: data.difficulty };
   });
+
+export type InterviewMetricsInput = {
+  wpm: number;
+  fillerCount: number;
+  fillerRate: number;
+  eyeContact: number;
+  smile: number;
+  stability: number;
+  durationSec: number;
+  cameraUsed: boolean;
+};
 
 export const scoreInterviewAnswers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
     (
       data: unknown,
-    ): { role: string; qa: Array<{ question: string; answer: string }> } => {
-      const d = data as { role?: unknown; qa?: unknown };
+    ): {
+      role: string;
+      difficulty: string;
+      qa: Array<{ question: string; answer: string }>;
+      metrics: InterviewMetricsInput;
+    } => {
+      const d = data as { role?: unknown; difficulty?: unknown; qa?: unknown; metrics?: unknown };
       if (typeof d.role !== "string" || !Array.isArray(d.qa)) throw new Error("Invalid input");
       const qa = d.qa
         .filter(
@@ -251,18 +320,51 @@ export const scoreInterviewAnswers = createServerFn({ method: "POST" })
         .slice(0, 8)
         .map((x) => ({ question: x.question.slice(0, 500), answer: x.answer.slice(0, 3000) }));
       if (qa.length === 0) throw new Error("Provide at least one answer");
-      return { role: d.role.slice(0, 120), qa };
+      const m = (d.metrics ?? {}) as Record<string, unknown>;
+      const num = (v: unknown, fallback = 0) => (typeof v === "number" && Number.isFinite(v) ? v : fallback);
+      return {
+        role: d.role.slice(0, 120),
+        difficulty: typeof d.difficulty === "string" ? d.difficulty.slice(0, 20) : "mid",
+        qa,
+        metrics: {
+          wpm: Math.round(num(m.wpm)),
+          fillerCount: Math.round(num(m.fillerCount)),
+          fillerRate: Number(num(m.fillerRate).toFixed(2)),
+          eyeContact: Math.round(num(m.eyeContact)),
+          smile: Math.round(num(m.smile)),
+          stability: Math.round(num(m.stability)),
+          durationSec: Math.round(num(m.durationSec)),
+          cameraUsed: Boolean(m.cameraUsed),
+        },
+      };
     },
   )
   .handler(async ({ data, context }) => {
-    const prompt = `You are a senior interviewer scoring a mock interview for a "${data.role}" role.
-For each question+answer, score 0-100 and give specific coaching feedback.
+    const since = new Date(Date.now() - WINDOW_HOURS * 3600_000).toISOString();
+    const { count } = await context.supabase
+      .from("assessment_results")
+      .select("id", { count: "exact", head: true })
+      .eq("kind", "interview")
+      .gte("created_at", since);
+    if ((count ?? 0) >= MAX_ATTEMPTS) {
+      throw new Error("Attempt limit reached. You can take 2 mock interviews per 24 hours.");
+    }
+
+    const prompt = `You are a senior interviewer scoring a mock interview for a "${data.role}" role at ${data.difficulty}-level.
+For each question+answer: score 0-100, rate the STAR framework coverage, and give specific coaching feedback.
+STAR ratings are 0-100 each: situation, task, action, result. For purely technical questions still rate STAR (structure of the explanation) and set "applicable": false.
+
+Delivery telemetry captured during the session (use it in your tips, do not invent numbers):
+${JSON.stringify(data.metrics)}
+
 Return JSON:
 {
  "overall": 0-100,
  "verdict": "Ready | Almost there | Needs work",
+ "star_overall": {"situation":0-100,"task":0-100,"action":0-100,"result":0-100},
+ "delivery_feedback": "2-3 sentences on pacing, filler words, and body language based on the telemetry",
  "per_question": [
-   {"question":"...","answer_score":0-100,"feedback":"...","exemplar":"a stronger 2-3 sentence answer"}
+   {"question":"...","answer_score":0-100,"star":{"situation":0-100,"task":0-100,"action":0-100,"result":0-100,"applicable":true},"feedback":"...","exemplar":"a stronger 3-4 sentence STAR answer"}
  ],
  "top_tips": ["...","...","..."]
 }
@@ -273,17 +375,31 @@ ${JSON.stringify(data.qa)}`;
     const parsed = safeJson<{
       overall: number;
       verdict: string;
-      per_question: Array<{ question: string; answer_score: number; feedback: string; exemplar: string }>;
+      star_overall?: { situation: number; task: number; action: number; result: number };
+      delivery_feedback?: string;
+      per_question: Array<{
+        question: string;
+        answer_score: number;
+        star?: { situation: number; task: number; action: number; result: number; applicable?: boolean };
+        feedback: string;
+        exemplar: string;
+      }>;
       top_tips: string[];
     }>(raw);
     if (!parsed) throw new Error("AI returned an unreadable response.");
 
-    await context.supabase.from("assessment_results").insert({
+    const { error } = await context.supabase.from("assessment_results").insert({
       user_id: context.userId,
       kind: "interview",
       score: Math.round(parsed.overall ?? 0),
-      details: { role: data.role, ...parsed },
+      details: { role: data.role, difficulty: data.difficulty, metrics: data.metrics, ...parsed },
     });
+    if (error) throw new Error(error.message);
 
-    return parsed;
+    return {
+      ...parsed,
+      metrics: data.metrics,
+      attemptsRemaining: Math.max(0, MAX_ATTEMPTS - ((count ?? 0) + 1)),
+    };
   });
+
