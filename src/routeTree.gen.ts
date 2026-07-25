@@ -37,6 +37,7 @@ import { Route as AdminLoginRouteImport } from './routes/admin-login'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AssessmentIndexRouteImport } from './routes/assessment.index'
 import { Route as ScholarshipsNeedRouteImport } from './routes/scholarships.need'
 import { Route as ScholarshipsMeritRouteImport } from './routes/scholarships.merit'
 import { Route as ScholarshipsDiversityRouteImport } from './routes/scholarships.diversity'
@@ -225,6 +226,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AssessmentIndexRoute = AssessmentIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AssessmentRoute,
 } as any)
 const ScholarshipsNeedRoute = ScholarshipsNeedRouteImport.update({
   id: '/need',
@@ -543,6 +549,7 @@ export interface FileRoutesByFullPath {
   '/scholarships/diversity': typeof ScholarshipsDiversityRoute
   '/scholarships/merit': typeof ScholarshipsMeritRoute
   '/scholarships/need': typeof ScholarshipsNeedRoute
+  '/assessment/': typeof AssessmentIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -554,7 +561,6 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/admin-login': typeof AdminLoginRoute
-  '/assessment': typeof AssessmentRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
@@ -621,6 +627,7 @@ export interface FileRoutesByTo {
   '/scholarships/diversity': typeof ScholarshipsDiversityRoute
   '/scholarships/merit': typeof ScholarshipsMeritRoute
   '/scholarships/need': typeof ScholarshipsNeedRoute
+  '/assessment': typeof AssessmentIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -700,6 +707,7 @@ export interface FileRoutesById {
   '/scholarships/diversity': typeof ScholarshipsDiversityRoute
   '/scholarships/merit': typeof ScholarshipsMeritRoute
   '/scholarships/need': typeof ScholarshipsNeedRoute
+  '/assessment/': typeof AssessmentIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -780,6 +788,7 @@ export interface FileRouteTypes {
     | '/scholarships/diversity'
     | '/scholarships/merit'
     | '/scholarships/need'
+    | '/assessment/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/lovable/email/auth/preview'
@@ -791,7 +800,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/admin-login'
-    | '/assessment'
     | '/blog'
     | '/compare'
     | '/contact'
@@ -858,6 +866,7 @@ export interface FileRouteTypes {
     | '/scholarships/diversity'
     | '/scholarships/merit'
     | '/scholarships/need'
+    | '/assessment'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/lovable/email/auth/preview'
@@ -936,6 +945,7 @@ export interface FileRouteTypes {
     | '/scholarships/diversity'
     | '/scholarships/merit'
     | '/scholarships/need'
+    | '/assessment/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/lovable/email/auth/preview'
@@ -1182,6 +1192,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/assessment/': {
+      id: '/assessment/'
+      path: '/'
+      fullPath: '/assessment/'
+      preLoaderRoute: typeof AssessmentIndexRouteImport
+      parentRoute: typeof AssessmentRoute
     }
     '/scholarships/need': {
       id: '/scholarships/need'
@@ -1530,6 +1547,7 @@ interface AssessmentRouteChildren {
   AssessmentPersonalityRoute: typeof AssessmentPersonalityRoute
   AssessmentResumeRoute: typeof AssessmentResumeRoute
   AssessmentTechnicalRoute: typeof AssessmentTechnicalRoute
+  AssessmentIndexRoute: typeof AssessmentIndexRoute
 }
 
 const AssessmentRouteChildren: AssessmentRouteChildren = {
@@ -1540,6 +1558,7 @@ const AssessmentRouteChildren: AssessmentRouteChildren = {
   AssessmentPersonalityRoute: AssessmentPersonalityRoute,
   AssessmentResumeRoute: AssessmentResumeRoute,
   AssessmentTechnicalRoute: AssessmentTechnicalRoute,
+  AssessmentIndexRoute: AssessmentIndexRoute,
 }
 
 const AssessmentRouteWithChildren = AssessmentRoute._addFileChildren(
