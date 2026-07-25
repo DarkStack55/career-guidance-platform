@@ -37,6 +37,7 @@ import { Route as AdminLoginRouteImport } from './routes/admin-login'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AssessmentIndexRouteImport } from './routes/assessment.index'
 import { Route as ScholarshipsNeedRouteImport } from './routes/scholarships.need'
 import { Route as ScholarshipsMeritRouteImport } from './routes/scholarships.merit'
 import { Route as ScholarshipsDiversityRouteImport } from './routes/scholarships.diversity'
@@ -72,6 +73,7 @@ import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AssessmentTechnicalRouteImport } from './routes/assessment.technical'
 import { Route as AssessmentResumeRouteImport } from './routes/assessment.resume'
 import { Route as AssessmentPersonalityRouteImport } from './routes/assessment.personality'
+import { Route as AssessmentMockInterviewRouteImport } from './routes/assessment.mock-interview'
 import { Route as AssessmentInterviewRouteImport } from './routes/assessment.interview'
 import { Route as AssessmentCareerFitRouteImport } from './routes/assessment.career-fit'
 import { Route as AssessmentAptitudeRouteImport } from './routes/assessment.aptitude'
@@ -224,6 +226,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AssessmentIndexRoute = AssessmentIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AssessmentRoute,
 } as any)
 const ScholarshipsNeedRoute = ScholarshipsNeedRouteImport.update({
   id: '/need',
@@ -400,6 +407,11 @@ const AssessmentPersonalityRoute = AssessmentPersonalityRouteImport.update({
   path: '/personality',
   getParentRoute: () => AssessmentRoute,
 } as any)
+const AssessmentMockInterviewRoute = AssessmentMockInterviewRouteImport.update({
+  id: '/mock-interview',
+  path: '/mock-interview',
+  getParentRoute: () => AssessmentRoute,
+} as any)
 const AssessmentInterviewRoute = AssessmentInterviewRouteImport.update({
   id: '/interview',
   path: '/interview',
@@ -501,6 +513,7 @@ export interface FileRoutesByFullPath {
   '/assessment/aptitude': typeof AssessmentAptitudeRoute
   '/assessment/career-fit': typeof AssessmentCareerFitRoute
   '/assessment/interview': typeof AssessmentInterviewRoute
+  '/assessment/mock-interview': typeof AssessmentMockInterviewRoute
   '/assessment/personality': typeof AssessmentPersonalityRoute
   '/assessment/resume': typeof AssessmentResumeRoute
   '/assessment/technical': typeof AssessmentTechnicalRoute
@@ -536,6 +549,7 @@ export interface FileRoutesByFullPath {
   '/scholarships/diversity': typeof ScholarshipsDiversityRoute
   '/scholarships/merit': typeof ScholarshipsMeritRoute
   '/scholarships/need': typeof ScholarshipsNeedRoute
+  '/assessment/': typeof AssessmentIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -547,7 +561,6 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/admin-login': typeof AdminLoginRoute
-  '/assessment': typeof AssessmentRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
@@ -578,6 +591,7 @@ export interface FileRoutesByTo {
   '/assessment/aptitude': typeof AssessmentAptitudeRoute
   '/assessment/career-fit': typeof AssessmentCareerFitRoute
   '/assessment/interview': typeof AssessmentInterviewRoute
+  '/assessment/mock-interview': typeof AssessmentMockInterviewRoute
   '/assessment/personality': typeof AssessmentPersonalityRoute
   '/assessment/resume': typeof AssessmentResumeRoute
   '/assessment/technical': typeof AssessmentTechnicalRoute
@@ -613,6 +627,7 @@ export interface FileRoutesByTo {
   '/scholarships/diversity': typeof ScholarshipsDiversityRoute
   '/scholarships/merit': typeof ScholarshipsMeritRoute
   '/scholarships/need': typeof ScholarshipsNeedRoute
+  '/assessment': typeof AssessmentIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -656,6 +671,7 @@ export interface FileRoutesById {
   '/assessment/aptitude': typeof AssessmentAptitudeRoute
   '/assessment/career-fit': typeof AssessmentCareerFitRoute
   '/assessment/interview': typeof AssessmentInterviewRoute
+  '/assessment/mock-interview': typeof AssessmentMockInterviewRoute
   '/assessment/personality': typeof AssessmentPersonalityRoute
   '/assessment/resume': typeof AssessmentResumeRoute
   '/assessment/technical': typeof AssessmentTechnicalRoute
@@ -691,6 +707,7 @@ export interface FileRoutesById {
   '/scholarships/diversity': typeof ScholarshipsDiversityRoute
   '/scholarships/merit': typeof ScholarshipsMeritRoute
   '/scholarships/need': typeof ScholarshipsNeedRoute
+  '/assessment/': typeof AssessmentIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -735,6 +752,7 @@ export interface FileRouteTypes {
     | '/assessment/aptitude'
     | '/assessment/career-fit'
     | '/assessment/interview'
+    | '/assessment/mock-interview'
     | '/assessment/personality'
     | '/assessment/resume'
     | '/assessment/technical'
@@ -770,6 +788,7 @@ export interface FileRouteTypes {
     | '/scholarships/diversity'
     | '/scholarships/merit'
     | '/scholarships/need'
+    | '/assessment/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/lovable/email/auth/preview'
@@ -781,7 +800,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/admin-login'
-    | '/assessment'
     | '/blog'
     | '/compare'
     | '/contact'
@@ -812,6 +830,7 @@ export interface FileRouteTypes {
     | '/assessment/aptitude'
     | '/assessment/career-fit'
     | '/assessment/interview'
+    | '/assessment/mock-interview'
     | '/assessment/personality'
     | '/assessment/resume'
     | '/assessment/technical'
@@ -847,6 +866,7 @@ export interface FileRouteTypes {
     | '/scholarships/diversity'
     | '/scholarships/merit'
     | '/scholarships/need'
+    | '/assessment'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/lovable/email/auth/preview'
@@ -889,6 +909,7 @@ export interface FileRouteTypes {
     | '/assessment/aptitude'
     | '/assessment/career-fit'
     | '/assessment/interview'
+    | '/assessment/mock-interview'
     | '/assessment/personality'
     | '/assessment/resume'
     | '/assessment/technical'
@@ -924,6 +945,7 @@ export interface FileRouteTypes {
     | '/scholarships/diversity'
     | '/scholarships/merit'
     | '/scholarships/need'
+    | '/assessment/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/lovable/email/auth/preview'
@@ -1171,6 +1193,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/assessment/': {
+      id: '/assessment/'
+      path: '/'
+      fullPath: '/assessment/'
+      preLoaderRoute: typeof AssessmentIndexRouteImport
+      parentRoute: typeof AssessmentRoute
+    }
     '/scholarships/need': {
       id: '/scholarships/need'
       path: '/need'
@@ -1416,6 +1445,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssessmentPersonalityRouteImport
       parentRoute: typeof AssessmentRoute
     }
+    '/assessment/mock-interview': {
+      id: '/assessment/mock-interview'
+      path: '/mock-interview'
+      fullPath: '/assessment/mock-interview'
+      preLoaderRoute: typeof AssessmentMockInterviewRouteImport
+      parentRoute: typeof AssessmentRoute
+    }
     '/assessment/interview': {
       id: '/assessment/interview'
       path: '/interview'
@@ -1507,18 +1543,22 @@ interface AssessmentRouteChildren {
   AssessmentAptitudeRoute: typeof AssessmentAptitudeRoute
   AssessmentCareerFitRoute: typeof AssessmentCareerFitRoute
   AssessmentInterviewRoute: typeof AssessmentInterviewRoute
+  AssessmentMockInterviewRoute: typeof AssessmentMockInterviewRoute
   AssessmentPersonalityRoute: typeof AssessmentPersonalityRoute
   AssessmentResumeRoute: typeof AssessmentResumeRoute
   AssessmentTechnicalRoute: typeof AssessmentTechnicalRoute
+  AssessmentIndexRoute: typeof AssessmentIndexRoute
 }
 
 const AssessmentRouteChildren: AssessmentRouteChildren = {
   AssessmentAptitudeRoute: AssessmentAptitudeRoute,
   AssessmentCareerFitRoute: AssessmentCareerFitRoute,
   AssessmentInterviewRoute: AssessmentInterviewRoute,
+  AssessmentMockInterviewRoute: AssessmentMockInterviewRoute,
   AssessmentPersonalityRoute: AssessmentPersonalityRoute,
   AssessmentResumeRoute: AssessmentResumeRoute,
   AssessmentTechnicalRoute: AssessmentTechnicalRoute,
+  AssessmentIndexRoute: AssessmentIndexRoute,
 }
 
 const AssessmentRouteWithChildren = AssessmentRoute._addFileChildren(
