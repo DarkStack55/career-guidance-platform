@@ -45,6 +45,7 @@ const navigation: NavItem[] = [
       { label: "Career Fit Analyzer", to: "/assessment/career-fit" },
       { label: "AI Resume Grader", to: "/assessment/resume" },
       { label: "Mock Interview", to: "/assessment/interview" },
+      { label: "Mock Interview Studio", to: "/assessment/mock-interview" },
     ],
   },
   {

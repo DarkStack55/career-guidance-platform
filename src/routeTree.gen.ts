@@ -72,6 +72,7 @@ import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AssessmentTechnicalRouteImport } from './routes/assessment.technical'
 import { Route as AssessmentResumeRouteImport } from './routes/assessment.resume'
 import { Route as AssessmentPersonalityRouteImport } from './routes/assessment.personality'
+import { Route as AssessmentMockInterviewRouteImport } from './routes/assessment.mock-interview'
 import { Route as AssessmentInterviewRouteImport } from './routes/assessment.interview'
 import { Route as AssessmentCareerFitRouteImport } from './routes/assessment.career-fit'
 import { Route as AssessmentAptitudeRouteImport } from './routes/assessment.aptitude'
@@ -400,6 +401,11 @@ const AssessmentPersonalityRoute = AssessmentPersonalityRouteImport.update({
   path: '/personality',
   getParentRoute: () => AssessmentRoute,
 } as any)
+const AssessmentMockInterviewRoute = AssessmentMockInterviewRouteImport.update({
+  id: '/mock-interview',
+  path: '/mock-interview',
+  getParentRoute: () => AssessmentRoute,
+} as any)
 const AssessmentInterviewRoute = AssessmentInterviewRouteImport.update({
   id: '/interview',
   path: '/interview',
@@ -501,6 +507,7 @@ export interface FileRoutesByFullPath {
   '/assessment/aptitude': typeof AssessmentAptitudeRoute
   '/assessment/career-fit': typeof AssessmentCareerFitRoute
   '/assessment/interview': typeof AssessmentInterviewRoute
+  '/assessment/mock-interview': typeof AssessmentMockInterviewRoute
   '/assessment/personality': typeof AssessmentPersonalityRoute
   '/assessment/resume': typeof AssessmentResumeRoute
   '/assessment/technical': typeof AssessmentTechnicalRoute
@@ -578,6 +585,7 @@ export interface FileRoutesByTo {
   '/assessment/aptitude': typeof AssessmentAptitudeRoute
   '/assessment/career-fit': typeof AssessmentCareerFitRoute
   '/assessment/interview': typeof AssessmentInterviewRoute
+  '/assessment/mock-interview': typeof AssessmentMockInterviewRoute
   '/assessment/personality': typeof AssessmentPersonalityRoute
   '/assessment/resume': typeof AssessmentResumeRoute
   '/assessment/technical': typeof AssessmentTechnicalRoute
@@ -656,6 +664,7 @@ export interface FileRoutesById {
   '/assessment/aptitude': typeof AssessmentAptitudeRoute
   '/assessment/career-fit': typeof AssessmentCareerFitRoute
   '/assessment/interview': typeof AssessmentInterviewRoute
+  '/assessment/mock-interview': typeof AssessmentMockInterviewRoute
   '/assessment/personality': typeof AssessmentPersonalityRoute
   '/assessment/resume': typeof AssessmentResumeRoute
   '/assessment/technical': typeof AssessmentTechnicalRoute
@@ -735,6 +744,7 @@ export interface FileRouteTypes {
     | '/assessment/aptitude'
     | '/assessment/career-fit'
     | '/assessment/interview'
+    | '/assessment/mock-interview'
     | '/assessment/personality'
     | '/assessment/resume'
     | '/assessment/technical'
@@ -812,6 +822,7 @@ export interface FileRouteTypes {
     | '/assessment/aptitude'
     | '/assessment/career-fit'
     | '/assessment/interview'
+    | '/assessment/mock-interview'
     | '/assessment/personality'
     | '/assessment/resume'
     | '/assessment/technical'
@@ -889,6 +900,7 @@ export interface FileRouteTypes {
     | '/assessment/aptitude'
     | '/assessment/career-fit'
     | '/assessment/interview'
+    | '/assessment/mock-interview'
     | '/assessment/personality'
     | '/assessment/resume'
     | '/assessment/technical'
@@ -1416,6 +1428,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssessmentPersonalityRouteImport
       parentRoute: typeof AssessmentRoute
     }
+    '/assessment/mock-interview': {
+      id: '/assessment/mock-interview'
+      path: '/mock-interview'
+      fullPath: '/assessment/mock-interview'
+      preLoaderRoute: typeof AssessmentMockInterviewRouteImport
+      parentRoute: typeof AssessmentRoute
+    }
     '/assessment/interview': {
       id: '/assessment/interview'
       path: '/interview'
@@ -1507,6 +1526,7 @@ interface AssessmentRouteChildren {
   AssessmentAptitudeRoute: typeof AssessmentAptitudeRoute
   AssessmentCareerFitRoute: typeof AssessmentCareerFitRoute
   AssessmentInterviewRoute: typeof AssessmentInterviewRoute
+  AssessmentMockInterviewRoute: typeof AssessmentMockInterviewRoute
   AssessmentPersonalityRoute: typeof AssessmentPersonalityRoute
   AssessmentResumeRoute: typeof AssessmentResumeRoute
   AssessmentTechnicalRoute: typeof AssessmentTechnicalRoute
@@ -1516,6 +1536,7 @@ const AssessmentRouteChildren: AssessmentRouteChildren = {
   AssessmentAptitudeRoute: AssessmentAptitudeRoute,
   AssessmentCareerFitRoute: AssessmentCareerFitRoute,
   AssessmentInterviewRoute: AssessmentInterviewRoute,
+  AssessmentMockInterviewRoute: AssessmentMockInterviewRoute,
   AssessmentPersonalityRoute: AssessmentPersonalityRoute,
   AssessmentResumeRoute: AssessmentResumeRoute,
   AssessmentTechnicalRoute: AssessmentTechnicalRoute,
