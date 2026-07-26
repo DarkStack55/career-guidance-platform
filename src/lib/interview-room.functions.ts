@@ -129,7 +129,7 @@ export const appendTurn = createServerFn({ method: "POST" })
       speaker: x.speaker === "ai" ? "ai" : "candidate",
       text: String(x.text ?? "").slice(0, 6000),
       turnIndex: Number(x.turnIndex) || 0,
-      metrics: (x.metrics ?? null) as Record<string, unknown> | null,
+      metrics: (x.metrics ?? null) as never,
     };
   })
   .handler(async ({ data, context }) => {
