@@ -203,6 +203,72 @@ export type Database = {
         }
         Relationships: []
       }
+      interview_sessions: {
+        Row: {
+          audio_path: string | null
+          confidence_avg: number
+          created_at: string
+          debrief: Json | null
+          duration_sec: number
+          ended_at: string | null
+          error_message: string | null
+          eye_contact_avg: number
+          highlights: string
+          id: string
+          level: string
+          question_budget: number
+          role: string
+          started_at: string | null
+          status: string
+          track: string
+          updated_at: string
+          user_id: string
+          voice: string
+        }
+        Insert: {
+          audio_path?: string | null
+          confidence_avg?: number
+          created_at?: string
+          debrief?: Json | null
+          duration_sec?: number
+          ended_at?: string | null
+          error_message?: string | null
+          eye_contact_avg?: number
+          highlights?: string
+          id?: string
+          level?: string
+          question_budget?: number
+          role?: string
+          started_at?: string | null
+          status?: string
+          track?: string
+          updated_at?: string
+          user_id: string
+          voice?: string
+        }
+        Update: {
+          audio_path?: string | null
+          confidence_avg?: number
+          created_at?: string
+          debrief?: Json | null
+          duration_sec?: number
+          ended_at?: string | null
+          error_message?: string | null
+          eye_contact_avg?: number
+          highlights?: string
+          id?: string
+          level?: string
+          question_budget?: number
+          role?: string
+          started_at?: string | null
+          status?: string
+          track?: string
+          updated_at?: string
+          user_id?: string
+          voice?: string
+        }
+        Relationships: []
+      }
       job_alert_preferences: {
         Row: {
           arrangements: string[]
@@ -332,6 +398,7 @@ export type Database = {
           id: string
           location: string | null
           phone: string | null
+          preferred_voice: string | null
           resume_url: string | null
           updated_at: string
           years_experience: number | null
@@ -344,6 +411,7 @@ export type Database = {
           id: string
           location?: string | null
           phone?: string | null
+          preferred_voice?: string | null
           resume_url?: string | null
           updated_at?: string
           years_experience?: number | null
@@ -356,6 +424,7 @@ export type Database = {
           id?: string
           location?: string | null
           phone?: string | null
+          preferred_voice?: string | null
           resume_url?: string | null
           updated_at?: string
           years_experience?: number | null
@@ -463,6 +532,50 @@ export type Database = {
           reason?: string
         }
         Relationships: []
+      }
+      transcript_turns: {
+        Row: {
+          created_at: string
+          id: string
+          metrics: Json | null
+          session_id: string
+          speaker: string
+          spoken_at: string
+          text: string
+          turn_index: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metrics?: Json | null
+          session_id: string
+          speaker: string
+          spoken_at?: string
+          text?: string
+          turn_index?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metrics?: Json | null
+          session_id?: string
+          speaker?: string
+          spoken_at?: string
+          text?: string
+          turn_index?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transcript_turns_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "interview_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
