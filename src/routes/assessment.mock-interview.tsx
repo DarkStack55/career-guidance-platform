@@ -1,52 +1,90 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "@tanstack/react-router";
-import { ArrowLeft, ChevronRight, Play, Square, Sparkles } from "lucide-react";
-import { VideoStage } from "@/components/mock-interview/VideoStage";
-import { AnalyticsSidebar } from "@/components/mock-interview/AnalyticsSidebar";
-import { RoleSettings, RoleSettingsValue } from "@/components/mock-interview/RoleSettings";
-import { EvaluationTabs } from "@/components/mock-interview/EvaluationTabs";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 import {
-  deriveStar,
-  EMPTY_METRICS,
-  LiveMetrics,
-  PERSONAS,
-  PersonaId,
-  questionsFor,
-  StarScores,
-  stepMetrics,
-  TRACKS,
-} from "@/lib/mock-interview-data";
+  ArrowLeft,
+  Captions,
+  Loader2,
+  Lock,
+  Mic,
+  MicOff,
+  PhoneOff,
+  Play,
+  Send,
+  Sparkles,
+  TriangleAlert,
+} from "lucide-react";
+import { RoleSettings, type RoleSettingsValue } from "@/components/mock-interview/RoleSettings";
+import { RoomStage, type Subtitle } from "@/components/interview-room/RoomStage";
+import { CaptionsDrawer, type CaptionLine } from "@/components/interview-room/CaptionsDrawer";
+import { DeviceErrorModal } from "@/components/interview-room/DeviceErrorModal";
+import { VoicePicker } from "@/components/interview-room/VoicePicker";
+import { DebriefPanel } from "@/components/interview-room/DebriefPanel";
+import { TRACKS } from "@/lib/mock-interview-data";
+import { analyzeSpeech } from "@/lib/interview-metrics";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  computeConfidence,
+  createMeter,
+  createRecognition,
+  createRecorder,
+  speak,
+  ttsSupported,
+  VOICE_NAME,
+  type RecognitionLike,
+  type VoiceId,
+} from "@/lib/interview-room-client";
+import {
+  appendTurn,
+  finalizeSession,
+  getRoomAttempts,
+  getVoicePreference,
+  markSessionFailed,
+  nextTurn,
+  saveVoicePreference,
+  startSession,
+  type Debrief,
+} from "@/lib/interview-room.functions";
 
 export const Route = createFileRoute("/assessment/mock-interview")({
   head: () => ({
     meta: [
-      { title: "Mock Interview Setup & Session — CareerPilot AI" },
+      { title: "Live AI Interview Room — CareerPilot AI" },
       {
         name: "description",
         content:
-          "Run a live mock interview with camera preview, real-time pacing and filler-word analytics, STAR scoring and a downloadable report card.",
+          "A real-time voice and video interview simulator with Elena or Kira as your AI interviewer, live subtitles, confidence and eye-contact feedback, and a full debrief.",
       },
-      { property: "og:title", content: "Mock Interview Setup & Session — CareerPilot AI" },
+      { property: "og:title", content: "Live AI Interview Room — CareerPilot AI" },
       {
         property: "og:description",
-        content:
-          "Practice interviews with live speech pacing, filler-word tracking, face stability and STAR framework evaluation.",
+        content: "Two-way voice interview practice with live subtitles, confidence scoring and an AI debrief.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: MockInterviewPage,
+  component: InterviewRoom,
 });
 
+type Phase = "setup" | "live" | "finalizing" | "debrief";
+type Attempts = { used: number; max: number; remaining: number; locked: boolean; unlocksAt: string | null };
+
 function fmt(sec: number) {
-  const m = Math.floor(sec / 60);
-  const s = sec % 60;
-  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  return `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
 }
 
-function MockInterviewPage() {
+function InterviewRoom() {
+  const startFn = useServerFn(startSession);
+  const appendFn = useServerFn(appendTurn);
+  const nextFn = useServerFn(nextTurn);
+  const finalizeFn = useServerFn(finalizeSession);
+  const failFn = useServerFn(markSessionFailed);
+  const attemptsFn = useServerFn(getRoomAttempts);
+  const getVoiceFn = useServerFn(getVoicePreference);
+  const saveVoiceFn = useServerFn(saveVoicePreference);
+
   const [settings, setSettings] = useState<RoleSettingsValue>({
     track: "mechanical",
     role: TRACKS[0].defaultRole,
@@ -54,86 +92,470 @@ function MockInterviewPage() {
     count: 5,
     highlights: "",
   });
-  const [persona, setPersona] = useState<PersonaId>("hr");
-  const [live, setLive] = useState(false);
+  const [voice, setVoice] = useState<VoiceId>("elena");
+  const [attempts, setAttempts] = useState<Attempts | null>(null);
+  const [phase, setPhase] = useState<Phase>("setup");
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [deviceError, setDeviceError] = useState<string | null>(null);
+  const [textMode, setTextMode] = useState(false);
+  const [typed, setTyped] = useState("");
+  const [handsFree, setHandsFree] = useState(true);
+  const [listening, setListening] = useState(false);
+  const [aiSpeaking, setAiSpeaking] = useState(false);
+  const [aiThinking, setAiThinking] = useState(false);
+  const [subtitle, setSubtitle] = useState<Subtitle>(null);
+  const [lines, setLines] = useState<CaptionLine[]>([]);
+  const [captionsOpen, setCaptionsOpen] = useState(false);
   const [elapsed, setElapsed] = useState(0);
-  const [qIndex, setQIndex] = useState(0);
-  const [metrics, setMetrics] = useState<LiveMetrics>(EMPTY_METRICS);
-  const [completed, setCompleted] = useState(false);
-  const [star, setStar] = useState<StarScores | null>(null);
-  const [cameraNote, setCameraNote] = useState<string | null>(null);
-  const metricsRef = useRef(metrics);
-  metricsRef.current = metrics;
+  const [micLevel, setMicLevel] = useState(0);
+  const [facing, setFacing] = useState(true);
+  const [gazeTest, setGazeTest] = useState(false);
+  const [confidence, setConfidence] = useState(70);
+  const [debrief, setDebrief] = useState<Debrief | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  const questions = useMemo(() => questionsFor(settings.track, settings.count), [settings.track, settings.count]);
-  const personaMeta = PERSONAS.find((p) => p.id === persona)!;
+  const recRef = useRef<RecognitionLike | null>(null);
+  const recorderRef = useRef<{ stop: () => Promise<Blob | null> } | null>(null);
+  const meterRef = useRef<ReturnType<typeof createMeter> | null>(null);
+  const cancelSpeakRef = useRef<(() => void) | null>(null);
+  const turnIndexRef = useRef(1);
+  const finalTextRef = useRef("");
+  const silenceRef = useRef<number | null>(null);
+  const allAnswersRef = useRef("");
+  const gazeStatsRef = useRef({ good: 0, total: 0 });
+  const confSamplesRef = useRef<number[]>([]);
+  const phaseRef = useRef<Phase>("setup");
+  phaseRef.current = phase;
+  const sessionRef = useRef<string | null>(null);
+  sessionRef.current = sessionId;
+  const handsFreeRef = useRef(handsFree);
+  handsFreeRef.current = handsFree;
+  const warnedRef = useRef(0);
+  const gazeWarnRef = useRef(false);
+
+  const voiceName = VOICE_NAME[voice];
+
+  // ---------- bootstrap ----------
+  useEffect(() => {
+    void (async () => {
+      try {
+        setAttempts((await attemptsFn({})) as Attempts);
+      } catch {
+        setAttempts(null);
+      }
+      try {
+        const v = (await getVoiceFn({})) as { voice: VoiceId };
+        setVoice(v.voice);
+      } catch {
+        /* signed-out or offline: keep default */
+      }
+    })();
+  }, [attemptsFn, getVoiceFn]);
+
+  // ---------- timers & meters ----------
+  useEffect(() => {
+    if (phase !== "live") return;
+    const id = window.setInterval(() => setElapsed((e) => e + 1), 1000);
+    return () => window.clearInterval(id);
+  }, [phase]);
 
   useEffect(() => {
-    if (!live) return;
-    const id = window.setInterval(() => {
-      setElapsed((e) => e + 1);
-      setMetrics((m) => stepMetrics(m, 1));
-    }, 1000);
-    return () => window.clearInterval(id);
-  }, [live]);
+    if (!stream || phase !== "live") return;
+    let meter: ReturnType<typeof createMeter> | null = null;
+    try {
+      meter = createMeter(stream);
+      meterRef.current = meter;
+    } catch {
+      meter = null;
+    }
+    if (!meter) return;
+    const id = window.setInterval(() => setMicLevel(meter!.read()), 90);
+    return () => {
+      window.clearInterval(id);
+      meter?.close();
+      meterRef.current = null;
+    };
+  }, [stream, phase]);
 
-  const start = useCallback(() => {
-    setMetrics({ ...EMPTY_METRICS, wpm: 120, stability: 80 });
-    setElapsed(0);
-    setQIndex(0);
-    setCompleted(false);
-    setStar(null);
-    setLive(true);
+  // Confidence + gaze sampling
+  useEffect(() => {
+    if (phase !== "live") return;
+    const id = window.setInterval(() => {
+      const g = gazeStatsRef.current;
+      g.total++;
+      if (facing && !gazeTest) g.good++;
+      const eye = g.total ? Math.round((g.good / g.total) * 100) : 100;
+      const stats = analyzeSpeech(allAnswersRef.current, Math.max(1, elapsedRef.current));
+      const c = computeConfidence({
+        wpm: stats.wpm,
+        fillerRate: stats.fillerRate,
+        eyeContact: eye,
+        words: stats.words,
+      });
+      confSamplesRef.current.push(c);
+      setConfidence(c);
+    }, 2000);
+    return () => window.clearInterval(id);
+  }, [phase, facing, gazeTest]);
+
+  const elapsedRef = useRef(0);
+  elapsedRef.current = elapsed;
+
+  // Eye-contact warning
+  useEffect(() => {
+    if (phase !== "live") return;
+    const lost = !facing || gazeTest;
+    gazeWarnRef.current = lost;
+    if (!lost) return;
+    const now = Date.now();
+    if (now - warnedRef.current < 12000) return;
+    warnedRef.current = now;
+    toast.warning("Warning: Please maintain eye contact with the interviewer.");
+  }, [facing, gazeTest, phase]);
+
+  // ---------- transcript helpers ----------
+  const pushLine = useCallback((speaker: "ai" | "candidate", text: string) => {
+    setLines((l) => [...l, { speaker, text, at: Date.now() }]);
   }, []);
 
-  const end = useCallback(() => {
-    setLive(false);
-    setStar(deriveStar(metricsRef.current, settings.level));
-    setCompleted(true);
-  }, [settings.level]);
+  const stopRecognition = useCallback(() => {
+    const r = recRef.current;
+    recRef.current = null;
+    setListening(false);
+    if (!r) return;
+    r.onresult = null;
+    r.onend = null;
+    r.onerror = null;
+    try {
+      r.stop();
+    } catch {
+      /* already stopped */
+    }
+  }, []);
 
-  const download = useCallback(() => {
-    const s = star ?? deriveStar(metrics, settings.level);
-    const overall = Math.round((s.situation + s.task + s.action + s.result) / 4);
-    const trackLabel = TRACKS.find((t) => t.id === settings.track)?.label ?? settings.track;
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>CareerPilot AI — Mock Interview Report Card</title>
-<style>
- body{font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#0f172a;margin:0;padding:40px;background:#fff}
- h1{font-size:24px;margin:0 0 4px} .sub{color:#64748b;font-size:13px;margin-bottom:28px}
- table{border-collapse:collapse;width:100%;margin-bottom:24px} td,th{border:1px solid #e2e8f0;padding:10px 12px;font-size:13px;text-align:left}
- th{background:#f8fafc} .big{font-size:40px;font-weight:600} ul{font-size:13px;line-height:1.7;color:#334155}
- h2{font-size:15px;margin:26px 0 10px}
-</style></head><body>
-<h1>Mock Interview Report Card</h1>
-<div class="sub">CareerPilot AI · generated ${new Date().toLocaleString()}</div>
-<div class="big">${overall}<span style="font-size:16px;color:#64748b">/100 readiness</span></div>
-<h2>Session setup</h2>
-<table><tr><th>Track</th><td>${trackLabel}</td></tr>
-<tr><th>Target role</th><td>${settings.role || "—"}</td></tr>
-<tr><th>Level</th><td>${settings.level}</td></tr>
-<tr><th>Interviewer persona</th><td>${personaMeta.label}</td></tr>
-<tr><th>Questions</th><td>${questions.length}</td></tr>
-<tr><th>Duration</th><td>${fmt(elapsed)}</td></tr></table>
-<h2>Delivery metrics</h2>
-<table><tr><th>Speech pacing</th><td>${metrics.wpm} wpm</td></tr>
-<tr><th>Filler words</th><td>${metrics.fillerCount}${metrics.fillers.length ? ` (${metrics.fillers.map((f) => `${f.word} x${f.count}`).join(", ")})` : ""}</td></tr>
-<tr><th>Face stability</th><td>${metrics.stability}%</td></tr></table>
-<h2>STAR framework</h2>
-<table><tr><th>Situation</th><td>${s.situation}/100</td></tr><tr><th>Task</th><td>${s.task}/100</td></tr>
-<tr><th>Action</th><td>${s.action}/100</td></tr><tr><th>Result</th><td>${s.result}/100</td></tr></table>
-<h2>Coaching notes</h2>
-<ul>${questions.map((q) => `<li><strong>${q.q}</strong><br/>${q.gaps.join("; ")}.</li>`).join("")}</ul>
+  const teardown = useCallback(() => {
+    stopRecognition();
+    cancelSpeakRef.current?.();
+    cancelSpeakRef.current = null;
+    if (silenceRef.current) window.clearTimeout(silenceRef.current);
+    silenceRef.current = null;
+    meterRef.current?.close();
+    meterRef.current = null;
+    stream?.getTracks().forEach((t) => t.stop());
+  }, [stopRecognition, stream]);
+
+  useEffect(() => () => teardown(), [teardown]);
+
+  // ---------- conversation loop ----------
+  const submitAnswerRef = useRef<(text: string) => void>(() => undefined);
+
+  const listen = useCallback(() => {
+    if (textMode || phaseRef.current !== "live") return;
+    const rec = createRecognition();
+    if (!rec) {
+      setTextMode(true);
+      toast.info("Speech recognition isn't available in this browser — switched to text mode.");
+      return;
+    }
+    finalTextRef.current = "";
+    rec.onresult = (e) => {
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const res = e.results[i];
+        const t = res[0]?.transcript ?? "";
+        if (res.isFinal) finalTextRef.current += `${t} `;
+        else interim += t;
+      }
+      const shown = `${finalTextRef.current}${interim}`.trim();
+      setSubtitle({ speaker: "candidate", text: shown, interim: interim.length > 0 });
+      if (handsFreeRef.current) {
+        if (silenceRef.current) window.clearTimeout(silenceRef.current);
+        silenceRef.current = window.setTimeout(() => {
+          if (finalTextRef.current.trim().length > 8) submitAnswerRef.current(finalTextRef.current.trim());
+        }, 2600) as unknown as number;
+      }
+    };
+    rec.onerror = (e) => {
+      if (e?.error === "not-allowed" || e?.error === "service-not-allowed") {
+        setDeviceError("Microphone access was blocked for speech recognition.");
+      }
+    };
+    rec.onend = () => {
+      setListening(false);
+      if (phaseRef.current === "live" && handsFreeRef.current && recRef.current) {
+        try {
+          recRef.current.start();
+          setListening(true);
+        } catch {
+          /* restart race */
+        }
+      }
+    };
+    recRef.current = rec;
+    try {
+      rec.start();
+      setListening(true);
+    } catch {
+      setListening(false);
+    }
+  }, [textMode]);
+
+  const sayAi = useCallback(
+    (text: string) =>
+      new Promise<void>((resolve) => {
+        setSubtitle({ speaker: "ai", text });
+        pushLine("ai", text);
+        if (!ttsSupported()) {
+          setTimeout(resolve, Math.min(6000, 1200 + text.length * 35));
+          return;
+        }
+        setAiSpeaking(true);
+        cancelSpeakRef.current = speak(text, voice, () => {
+          setAiSpeaking(false);
+          resolve();
+        });
+      }),
+    [pushLine, voice],
+  );
+
+  const finish = useCallback(
+    async (endedEarly: boolean) => {
+      if (phaseRef.current === "finalizing" || phaseRef.current === "debrief") return;
+      const id = sessionRef.current;
+      setPhase("finalizing");
+      stopRecognition();
+      cancelSpeakRef.current?.();
+      setAiSpeaking(false);
+
+      let audioPath: string | null = null;
+      try {
+        const blob = await recorderRef.current?.stop();
+        recorderRef.current = null;
+        if (blob && blob.size > 2000) {
+          setAudioUrl(URL.createObjectURL(blob));
+          const { data: auth } = await supabase.auth.getUser();
+          if (auth.user && id) {
+            const path = `${auth.user.id}/interviews/${id}.webm`;
+            const { error } = await supabase.storage
+              .from("user-uploads")
+              .upload(path, blob, { contentType: blob.type || "audio/webm", upsert: true });
+            if (!error) audioPath = path;
+          }
+        }
+      } catch {
+        /* replay is optional — never block the debrief */
+      }
+
+      stream?.getTracks().forEach((t) => t.stop());
+      setStream(null);
+
+      if (!id) {
+        setPhase("setup");
+        return;
+      }
+
+      const g = gazeStatsRef.current;
+      const eye = g.total ? Math.round((g.good / g.total) * 100) : 0;
+      const conf = confSamplesRef.current.length
+        ? Math.round(confSamplesRef.current.reduce((a, b) => a + b, 0) / confSamplesRef.current.length)
+        : confidence;
+      const stats = analyzeSpeech(allAnswersRef.current, Math.max(1, elapsedRef.current));
+
+      try {
+        const res = (await finalizeFn({
+          data: {
+            sessionId: id,
+            endedEarly,
+            durationSec: elapsedRef.current,
+            confidenceAvg: conf,
+            eyeContactAvg: eye,
+            pacing: stats.wpm,
+            fillerRate: stats.fillerRate,
+            audioPath,
+          },
+        })) as { debrief: Debrief };
+        setDebrief(res.debrief);
+        setPhase("debrief");
+        void attemptsFn({}).then((a) => setAttempts(a as Attempts)).catch(() => undefined);
+      } catch (e) {
+        setDeviceError(e instanceof Error ? e.message : "Could not generate your debrief.");
+        setPhase("debrief");
+      }
+    },
+    [attemptsFn, confidence, finalizeFn, stopRecognition, stream],
+  );
+
+  const advance = useCallback(async () => {
+    const id = sessionRef.current;
+    if (!id) return;
+    setAiThinking(true);
+    try {
+      const stats = analyzeSpeech(allAnswersRef.current, Math.max(1, elapsedRef.current));
+      const turn = (await nextFn({
+        data: {
+          sessionId: id,
+          gazeWarning: gazeWarnRef.current,
+          pacing: stats.wpm,
+          fillerRate: stats.fillerRate,
+        },
+      })) as { text: string; done: boolean };
+      setAiThinking(false);
+      turnIndexRef.current += 1;
+      await sayAi(turn.text);
+      if (turn.done) {
+        await finish(false);
+        return;
+      }
+      listen();
+    } catch (e) {
+      setAiThinking(false);
+      setDeviceError(e instanceof Error ? e.message : "The interviewer could not respond.");
+      if (sessionRef.current) void failFn({ data: { sessionId: sessionRef.current, message: String(e) } }).catch(() => undefined);
+    }
+  }, [failFn, finish, listen, nextFn, sayAi]);
+
+  const submitAnswer = useCallback(
+    async (text: string) => {
+      const clean = text.trim();
+      const id = sessionRef.current;
+      if (!clean || !id || phaseRef.current !== "live") return;
+      stopRecognition();
+      if (silenceRef.current) window.clearTimeout(silenceRef.current);
+      finalTextRef.current = "";
+      allAnswersRef.current += ` ${clean}`;
+      setSubtitle({ speaker: "candidate", text: clean });
+      pushLine("candidate", clean);
+      const idx = turnIndexRef.current;
+      turnIndexRef.current += 1;
+      try {
+        await appendFn({
+          data: {
+            sessionId: id,
+            speaker: "candidate",
+            text: clean,
+            turnIndex: idx,
+            metrics: { confidence, elapsed: elapsedRef.current },
+          },
+        });
+      } catch {
+        toast.error("Could not save that answer — continuing.");
+      }
+      void advance();
+    },
+    [advance, appendFn, confidence, pushLine, stopRecognition],
+  );
+  submitAnswerRef.current = (t) => void submitAnswer(t);
+
+  // ---------- start ----------
+  const begin = useCallback(async () => {
+    if (busy) return;
+    setBusy(true);
+    setDeviceError(null);
+    setCameraError(null);
+    let media: MediaStream | null = null;
+    try {
+      media = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 }, audio: true });
+    } catch {
+      try {
+        media = await navigator.mediaDevices.getUserMedia({ audio: true });
+        setCameraError("Camera unavailable — running in audio-only mode.");
+      } catch {
+        setBusy(false);
+        setDeviceError("Microphone and camera access were denied.");
+        return;
+      }
+    }
+
+    try {
+      const res = (await startFn({
+        data: {
+          track: settings.track,
+          role: settings.role,
+          level: settings.level,
+          voice,
+          highlights: settings.highlights,
+          questionBudget: settings.count,
+        },
+      })) as { sessionId: string; opening: string };
+
+      setStream(media);
+      setSessionId(res.sessionId);
+      sessionRef.current = res.sessionId;
+      setLines([]);
+      setElapsed(0);
+      turnIndexRef.current = 1;
+      allAnswersRef.current = "";
+      gazeStatsRef.current = { good: 0, total: 0 };
+      confSamplesRef.current = [];
+      setDebrief(null);
+      setAudioUrl(null);
+      setPhase("live");
+      phaseRef.current = "live";
+      setBusy(false);
+
+      const audioTracks = media.getAudioTracks();
+      if (audioTracks.length) {
+        recorderRef.current = createRecorder(new MediaStream(audioTracks));
+      }
+
+      await sayAi(res.opening);
+      listen();
+    } catch (e) {
+      media?.getTracks().forEach((t) => t.stop());
+      setBusy(false);
+      const msg = e instanceof Error ? e.message : "Could not start the interview.";
+      if (msg.toLowerCase().includes("attempt limit")) toast.error(msg);
+      else setDeviceError(msg);
+    }
+  }, [busy, listen, sayAi, settings, startFn, voice]);
+
+  const onVoiceChange = useCallback(
+    (v: VoiceId) => {
+      setVoice(v);
+      void saveVoiceFn({ data: { voice: v } }).catch(() => undefined);
+    },
+    [saveVoiceFn],
+  );
+
+  const downloadReport = useCallback(() => {
+    if (!debrief) return;
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>CareerPilot AI — Interview Report</title>
+<style>body{font-family:ui-sans-serif,system-ui,sans-serif;color:#0f172a;padding:40px}h1{font-size:24px;margin:0 0 4px}
+.sub{color:#64748b;font-size:13px;margin-bottom:24px}table{border-collapse:collapse;width:100%;margin-bottom:20px}
+td,th{border:1px solid #e2e8f0;padding:9px 12px;font-size:13px;text-align:left}th{background:#f8fafc}
+.big{font-size:40px;font-weight:600}h2{font-size:15px;margin:24px 0 8px}ul{font-size:13px;line-height:1.7}</style></head><body>
+<h1>Live Interview Report</h1><div class="sub">CareerPilot AI · interviewer ${voiceName} · ${new Date().toLocaleString()}</div>
+<div class="big">${debrief.overall}<span style="font-size:16px;color:#64748b">/100 readiness</span></div>
+<p>${debrief.verdict}</p>
+<h2>Session</h2><table><tr><th>Role</th><td>${settings.role || settings.track}</td></tr>
+<tr><th>Level</th><td>${settings.level}</td></tr><tr><th>Duration</th><td>${fmt(debrief.duration_sec)}</td></tr></table>
+<h2>STAR</h2><table><tr><th>Situation</th><td>${debrief.star.situation}</td></tr><tr><th>Task</th><td>${debrief.star.task}</td></tr>
+<tr><th>Action</th><td>${debrief.star.action}</td></tr><tr><th>Result</th><td>${debrief.star.result}</td></tr></table>
+<h2>Delivery</h2><p>${debrief.delivery_feedback}</p>
+<h2>Questions</h2><ul>${debrief.per_question
+      .map((q) => `<li><strong>${q.question}</strong> — ${q.score}/100<br/>${q.feedback}<br/><em>${q.exemplar}</em></li>`)
+      .join("")}</ul>
+<h2>Top tips</h2><ul>${debrief.top_tips.map((t) => `<li>${t}</li>`).join("")}</ul>
+<h2>Transcript</h2><ul>${lines.map((l) => `<li><strong>${l.speaker === "ai" ? voiceName : "You"}:</strong> ${l.text}</li>`).join("")}</ul>
 </body></html>`;
-    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(new Blob([html], { type: "text/html;charset=utf-8" }));
     const a = document.createElement("a");
     a.href = url;
-    a.download = `careerpilot-mock-interview-report-${new Date().toISOString().slice(0, 10)}.html`;
+    a.download = `careerpilot-interview-${new Date().toISOString().slice(0, 10)}.html`;
     document.body.appendChild(a);
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 2000);
-  }, [star, metrics, settings, personaMeta, questions, elapsed]);
+  }, [debrief, lines, settings, voiceName]);
+
+  const locked = attempts?.locked ?? false;
+  const unlockLabel = useMemo(
+    () => (attempts?.unlocksAt ? new Date(attempts.unlocksAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : null),
+    [attempts],
+  );
 
   return (
     <div className="min-h-screen">
@@ -146,102 +568,252 @@ function MockInterviewPage() {
         </Link>
 
         <div className="mb-7">
-          <div className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-cyan-600 dark:text-cyan-300 mb-2">
-            <Sparkles className="size-3.5" /> Mock Interview
+          <div className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-indigo-600 dark:text-indigo-300 mb-2">
+            <Sparkles className="size-3.5" /> Interview Room
           </div>
           <h1 className="text-2xl md:text-4xl font-semibold tracking-tight text-foreground">
-            Mock Interview Setup &amp; Session
+            Live interview with {voiceName}
           </h1>
           <p className="mt-3 max-w-2xl text-sm md:text-base text-muted-foreground leading-relaxed">
-            A live training ground for real interviews. Set your track, pick an interviewer persona, run a timed session
-            with camera preview, then review your STAR breakdown against ideal answers.
+            A real two-way call: {voiceName} speaks the questions, your answers are transcribed live into the subtitle
+            bar, and every turn is saved so your debrief is always complete — even if you end early.
           </p>
         </div>
 
         <div className="grid gap-5 lg:grid-cols-[1fr_320px] items-start">
           <div className="space-y-5">
-            <RoleSettings value={settings} onChange={setSettings} disabled={live} />
+            {phase === "setup" && (
+              <>
+                <RoleSettings value={settings} onChange={setSettings} />
+                <VoicePicker value={voice} onChange={onVoiceChange} />
+                {locked && (
+                  <div className="rounded-[18px] border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-700 dark:text-amber-200 flex items-start gap-2">
+                    <Lock className="size-4 mt-0.5 shrink-0" />
+                    <span>
+                      You've used both interviews for today.{unlockLabel ? ` Unlocks around ${unlockLabel}.` : ""}
+                    </span>
+                  </div>
+                )}
+              </>
+            )}
 
-            <VideoStage
-              active={live}
-              timerLabel={fmt(elapsed)}
-              progressLabel={`Question ${qIndex + 1} of ${questions.length}`}
-              onCameraError={setCameraNote}
-            />
+            {(phase === "live" || phase === "finalizing") && (
+              <RoomStage
+                stream={stream}
+                voice={voice}
+                aiSpeaking={aiSpeaking}
+                micLevel={micLevel}
+                subtitle={subtitle}
+                timerLabel={fmt(elapsed)}
+                confidence={confidence}
+                recording={!!recorderRef.current}
+                cameraError={cameraError}
+                gazeOverride={gazeTest}
+                onGazeChange={setFacing}
+              />
+            )}
 
             {/* Control bar */}
-            <div className="rounded-2xl border border-black/[0.07] dark:border-white/10 bg-white dark:bg-white/[0.03] shadow-[0_10px_30px_-20px_rgba(15,23,42,0.35)] p-4 flex flex-wrap items-center gap-3">
-              {!live ? (
+            <div className="rounded-[18px] border border-black/[0.07] dark:border-white/10 bg-white dark:bg-white/[0.03] p-4 flex flex-wrap items-center gap-3">
+              {phase === "setup" && (
                 <button
                   type="button"
-                  onClick={start}
-                  className="inline-flex items-center gap-2 rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-5 py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity"
+                  onClick={() => void begin()}
+                  disabled={busy || locked}
+                  className="inline-flex items-center gap-2 rounded-xl bg-indigo-500 text-white px-5 py-2.5 text-sm font-semibold hover:bg-indigo-400 disabled:opacity-50 transition-colors"
                 >
-                  <Play className="size-4" /> Start Session
+                  {busy ? <Loader2 className="size-4 animate-spin" /> : <Play className="size-4" />}
+                  {busy ? "Connecting…" : `Start interview with ${voiceName}`}
                 </button>
-              ) : (
+              )}
+
+              {phase === "live" && (
                 <>
                   <button
                     type="button"
-                    onClick={end}
+                    onClick={() => void finish(true)}
                     className="inline-flex items-center gap-2 rounded-xl bg-rose-600 text-white px-5 py-2.5 text-sm font-semibold hover:bg-rose-500 transition-colors"
                   >
-                    <Square className="size-4" /> End Session
+                    <PhoneOff className="size-4" /> End interview
                   </button>
+
+                  {!textMode && (
+                    <>
+                      <button
+                        type="button"
+                        onMouseDown={() => !handsFree && listen()}
+                        onMouseUp={() => !handsFree && submitAnswerRef.current(finalTextRef.current)}
+                        onClick={() => handsFree && submitAnswerRef.current(finalTextRef.current)}
+                        disabled={aiSpeaking || aiThinking}
+                        className="inline-flex items-center gap-2 rounded-xl border border-black/10 dark:border-white/15 px-4 py-2.5 text-sm text-foreground hover:bg-black/[0.04] dark:hover:bg-white/[0.06] disabled:opacity-40 transition-colors"
+                      >
+                        {listening ? <Mic className="size-4 text-teal-500" /> : <MicOff className="size-4" />}
+                        {handsFree ? "Send answer" : "Hold to talk"}
+                      </button>
+                      <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+                        <input
+                          type="checkbox"
+                          checked={handsFree}
+                          onChange={(e) => setHandsFree(e.target.checked)}
+                          className="size-3.5 accent-indigo-500"
+                        />
+                        Hands-free
+                      </label>
+                    </>
+                  )}
+
                   <button
                     type="button"
-                    onClick={() => (qIndex < questions.length - 1 ? setQIndex((i) => i + 1) : end())}
+                    onClick={() => setCaptionsOpen(true)}
                     className="inline-flex items-center gap-2 rounded-xl border border-black/10 dark:border-white/15 px-4 py-2.5 text-sm text-foreground hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors"
                   >
-                    {qIndex < questions.length - 1 ? "Next question" : "Finish"} <ChevronRight className="size-4" />
+                    <Captions className="size-4" /> Captions
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setGazeTest((g) => !g)}
+                    className={`inline-flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs transition-colors ${
+                      gazeTest ? "bg-rose-500/15 text-rose-500" : "text-muted-foreground hover:bg-black/[0.04] dark:hover:bg-white/[0.06]"
+                    }`}
+                    title="Simulate losing eye contact"
+                  >
+                    <TriangleAlert className="size-3.5" /> Test warning
+                  </button>
+
+                  {aiThinking && (
+                    <span className="inline-flex items-center gap-2 text-xs text-muted-foreground ml-auto">
+                      <Loader2 className="size-3.5 animate-spin" /> {voiceName} is thinking…
+                    </span>
+                  )}
                 </>
               )}
 
-              <label className="flex items-center gap-2 ml-auto">
-                <span className="text-xs text-muted-foreground whitespace-nowrap">Interviewer Persona</span>
-                <select
-                  value={persona}
-                  onChange={(e) => setPersona(e.target.value as PersonaId)}
-                  disabled={live}
-                  className="rounded-lg border border-black/10 dark:border-white/15 bg-white dark:bg-white/[0.05] px-3 py-2 text-sm text-foreground disabled:opacity-50"
-                >
-                  {PERSONAS.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <p className="w-full text-xs text-muted-foreground">{personaMeta.blurb}</p>
-              {cameraNote && <p className="w-full text-xs text-amber-600 dark:text-amber-300">{cameraNote}</p>}
-            </div>
-
-            {/* Current question */}
-            <div className="rounded-2xl border border-black/[0.07] dark:border-white/10 bg-white dark:bg-white/[0.03] shadow-[0_10px_30px_-20px_rgba(15,23,42,0.35)] p-5">
-              <div className="text-[11px] uppercase tracking-widest text-muted-foreground mb-2">
-                {live ? `Question ${qIndex + 1} of ${questions.length}` : "First question preview"}
-              </div>
-              <p className="text-base md:text-lg text-foreground leading-relaxed">{questions[qIndex]?.q}</p>
-              {!live && (
-                <p className="mt-3 text-xs text-muted-foreground">
-                  Questions adapt to your selected track. Start the session to begin the timer and live analytics.
-                </p>
+              {phase === "finalizing" && (
+                <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="size-4 animate-spin" /> Generating your debrief…
+                </span>
               )}
             </div>
 
-            <EvaluationTabs
-              completed={completed}
-              star={star}
-              metrics={metrics}
-              questions={questions}
-              onDownload={download}
-            />
+            {phase === "live" && textMode && (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const t = typed.trim();
+                  if (!t) return;
+                  setTyped("");
+                  submitAnswerRef.current(t);
+                }}
+                className="rounded-[18px] border border-black/[0.07] dark:border-white/10 bg-white dark:bg-white/[0.03] p-4 flex gap-3"
+              >
+                <input
+                  value={typed}
+                  onChange={(e) => setTyped(e.target.value)}
+                  placeholder="Type your answer — subtitles and scoring still work"
+                  className="flex-1 rounded-xl border border-black/10 dark:border-white/15 bg-transparent px-4 py-2.5 text-sm text-foreground outline-none"
+                />
+                <button
+                  type="submit"
+                  disabled={aiSpeaking || aiThinking}
+                  className="inline-flex items-center gap-2 rounded-xl bg-indigo-500 text-white px-4 py-2.5 text-sm font-semibold disabled:opacity-50"
+                >
+                  <Send className="size-4" /> Send
+                </button>
+              </form>
+            )}
+
+            {phase === "debrief" && debrief && (
+              <DebriefPanel
+                debrief={debrief}
+                audioUrl={audioUrl}
+                onDownload={downloadReport}
+                onRestart={() => {
+                  setPhase("setup");
+                  setSessionId(null);
+                  setSubtitle(null);
+                  setLines([]);
+                  setDebrief(null);
+                }}
+              />
+            )}
           </div>
 
-          <AnalyticsSidebar metrics={metrics} live={live} />
+          {/* Sidebar */}
+          <aside className="rounded-[18px] border border-white/10 bg-neutral-900 text-white p-5 space-y-5 lg:sticky lg:top-24">
+            <div>
+              <div className="text-[11px] uppercase tracking-widest text-white/40">Session</div>
+              <div className="mt-1 text-sm">
+                {settings.role || TRACKS.find((t) => t.id === settings.track)?.label} · {settings.level}
+              </div>
+              <div className="text-xs text-white/50">{settings.count} question budget</div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between text-xs mb-1">
+                <span className="text-white/50">Confidence</span>
+                <span className="font-mono">{confidence}</span>
+              </div>
+              <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-teal-400 transition-all duration-500"
+                  style={{ width: `${confidence}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-center">
+              <div className="rounded-xl bg-white/5 p-3">
+                <div className="text-lg font-semibold">{fmt(elapsed)}</div>
+                <div className="text-[11px] text-white/45">Elapsed</div>
+              </div>
+              <div className="rounded-xl bg-white/5 p-3">
+                <div className="text-lg font-semibold">{lines.filter((l) => l.speaker === "candidate").length}</div>
+                <div className="text-[11px] text-white/45">Answers</div>
+              </div>
+            </div>
+
+            <div className="text-xs text-white/50 leading-relaxed">
+              {phase === "live"
+                ? listening
+                  ? "Listening — speak naturally, pause when you're done."
+                  : aiSpeaking
+                    ? `${voiceName} is speaking.`
+                    : "Waiting for the next turn."
+                : "Pick your track and voice, then start the call. Camera, mic and network issues are handled without losing your transcript."}
+            </div>
+
+            {attempts && (
+              <div className="text-[11px] text-white/40">
+                Attempts today: {attempts.used}/{attempts.max}
+              </div>
+            )}
+          </aside>
         </div>
       </div>
+
+      <CaptionsDrawer open={captionsOpen} lines={lines} voice={voice} onClose={() => setCaptionsOpen(false)} />
+
+      {deviceError && (
+        <DeviceErrorModal
+          message={deviceError}
+          onRetry={() => {
+            setDeviceError(null);
+            if (phaseRef.current === "live") listen();
+            else void begin();
+          }}
+          onTextMode={() => {
+            setDeviceError(null);
+            setTextMode(true);
+            stopRecognition();
+            if (phaseRef.current !== "live") void begin();
+          }}
+          onEnd={() => {
+            setDeviceError(null);
+            void finish(true);
+          }}
+        />
+      )}
     </div>
   );
 }
