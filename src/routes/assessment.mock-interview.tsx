@@ -516,23 +516,52 @@ function InterviewRoom() {
       }
     }
 
+    const plannedRole = sectorRole(sector, customSector) || settings.role;
+    const questionCount = DURATIONS.find((d) => d.minutes === minutes)?.questions ?? 5;
+    const sectorDef = SECTORS.find((s) => s.id === sector) ?? SECTORS[0];
+
     try {
       const res = (await startFn({
         data: {
-          track: settings.track,
-          role: settings.role,
+          track: sectorDef.track,
+          role: plannedRole,
           level: settings.level,
           voice,
           highlights: settings.highlights,
-          questionBudget: settings.count,
+          questionBudget: Math.min(10, questionCount),
         },
       })) as { sessionId: string; opening: string };
+
+      // Hybrid question source: AI writes the sector technicals, the local
+      // bank fills in whenever the call fails or comes back short.
+      let aiTechnicals: string[] = [];
+      try {
+        const plan = (await planFn({
+          data: {
+            sector: sector === "custom" ? customSector || "general" : sectorDef.label,
+            role: plannedRole,
+            level: settings.level,
+            count: Math.max(1, questionCount - 4),
+            highlights: settings.highlights,
+          },
+        })) as { questions: string[] };
+        aiTechnicals = plan.questions ?? [];
+      } catch {
+        /* local bank covers it */
+      }
+      const built = buildQuestionQueue(sector, questionCount, aiTechnicals);
+      queueRef.current = built;
+      queueIdxRef.current = 0;
+      setQueue(built);
+      setAskedCount(0);
 
       setStream(media);
       setSessionId(res.sessionId);
       sessionRef.current = res.sessionId;
       setLines([]);
       setElapsed(0);
+      setTimeUp(false);
+      timeUpRef.current = false;
       turnIndexRef.current = 1;
       allAnswersRef.current = "";
       gazeStatsRef.current = { good: 0, total: 0 };
@@ -548,8 +577,10 @@ function InterviewRoom() {
         recorderRef.current = createRecorder(new MediaStream(audioTracks));
       }
 
-      await sayAi(res.opening);
-      listen();
+      await sayAi(
+        `Hi, I'm ${voiceName} and I'll be running your ${minutes}-minute ${sectorDef.label.toLowerCase()} interview today. Take a breath — here's my first question.`,
+      );
+      void advance();
     } catch (e) {
       media?.getTracks().forEach((t) => t.stop());
       setBusy(false);
@@ -557,7 +588,8 @@ function InterviewRoom() {
       if (msg.toLowerCase().includes("attempt limit")) toast.error(msg);
       else setDeviceError(msg);
     }
-  }, [busy, listen, sayAi, settings, startFn, voice]);
+  }, [advance, busy, customSector, minutes, planFn, sayAi, sector, settings, startFn, voice, voiceName]);
+
 
   const onVoiceChange = useCallback(
     (v: VoiceId) => {
