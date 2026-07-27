@@ -417,31 +417,42 @@ function InterviewRoom() {
   const advance = useCallback(async () => {
     const id = sessionRef.current;
     if (!id) return;
+    // Time's up is a soft warning: the candidate finishes the current answer,
+    // then we close the session instead of queuing another question.
+    if (timeUpRef.current) {
+      await sayAi("That's time for today — thanks for staying with it. Let me put your feedback together.");
+      await finish(false);
+      return;
+    }
+    const next = queueRef.current[queueIdxRef.current];
+    if (!next) {
+      await finish(false);
+      return;
+    }
+    queueIdxRef.current += 1;
+    setAskedCount(queueIdxRef.current);
     setAiThinking(true);
     try {
-      const stats = analyzeSpeech(allAnswersRef.current, Math.max(1, elapsedRef.current));
-      const turn = (await nextFn({
-        data: {
-          sessionId: id,
-          gazeWarning: gazeWarnRef.current,
-          pacing: stats.wpm,
-          fillerRate: stats.fillerRate,
-        },
-      })) as { text: string; done: boolean };
-      setAiThinking(false);
+      const idx = turnIndexRef.current;
       turnIndexRef.current += 1;
-      await sayAi(turn.text);
-      if (turn.done) {
-        await finish(false);
-        return;
-      }
+      const prefix =
+        gazeWarnRef.current && next.stage !== "intro"
+          ? "I noticed you looked away — keep your eyes on me. "
+          : "";
+      const spoken = `${prefix}${next.text}`;
+      setAiThinking(false);
+      await sayAi(spoken);
+      void appendFn({
+        data: { sessionId: id, speaker: "ai", text: spoken, turnIndex: idx, metrics: { stage: next.stage } },
+      }).catch(() => undefined);
       listen();
     } catch (e) {
       setAiThinking(false);
       setDeviceError(e instanceof Error ? e.message : "The interviewer could not respond.");
       if (sessionRef.current) void failFn({ data: { sessionId: sessionRef.current, message: String(e) } }).catch(() => undefined);
     }
-  }, [failFn, finish, listen, nextFn, sayAi]);
+  }, [appendFn, failFn, finish, listen, sayAi]);
+
 
   const submitAnswer = useCallback(
     async (text: string) => {
