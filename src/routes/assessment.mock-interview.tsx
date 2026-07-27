@@ -747,14 +747,26 @@ td,th{border:1px solid #e2e8f0;padding:9px 12px;font-size:13px;text-align:left}t
                     <>
                       <button
                         type="button"
-                        onMouseDown={() => !handsFree && listen()}
+                        onMouseDown={() => !handsFree && !muted && listen()}
                         onMouseUp={() => !handsFree && submitAnswerRef.current(finalTextRef.current)}
                         onClick={() => handsFree && submitAnswerRef.current(finalTextRef.current)}
-                        disabled={aiSpeaking || aiThinking}
+                        disabled={aiSpeaking || aiThinking || muted}
                         className="inline-flex items-center gap-2 rounded-xl border border-black/10 dark:border-white/15 px-4 py-2.5 text-sm text-foreground hover:bg-black/[0.04] dark:hover:bg-white/[0.06] disabled:opacity-40 transition-colors"
                       >
                         {listening ? <Mic className="size-4 text-teal-500" /> : <MicOff className="size-4" />}
                         {handsFree ? "Send answer" : "Hold to talk"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={toggleMute}
+                        className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm transition-colors ${
+                          muted
+                            ? "bg-rose-500/15 text-rose-500"
+                            : "border border-black/10 dark:border-white/15 text-foreground hover:bg-black/[0.04] dark:hover:bg-white/[0.06]"
+                        }`}
+                      >
+                        {muted ? <MicOff className="size-4" /> : <Mic className="size-4" />}
+                        {muted ? "Unmute mic" : "Mute mic"}
                       </button>
                       <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
                         <input
@@ -770,11 +782,24 @@ td,th{border:1px solid #e2e8f0;padding:9px 12px;font-size:13px;text-align:left}t
 
                   <button
                     type="button"
+                    onClick={() => setCaptionsOn((c) => !c)}
+                    className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm transition-colors ${
+                      captionsOn
+                        ? "border border-black/10 dark:border-white/15 text-foreground hover:bg-black/[0.04] dark:hover:bg-white/[0.06]"
+                        : "bg-black/[0.05] dark:bg-white/[0.08] text-muted-foreground"
+                    }`}
+                  >
+                    <Captions className="size-4" /> Captions {captionsOn ? "on" : "off"}
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={() => setCaptionsOpen(true)}
                     className="inline-flex items-center gap-2 rounded-xl border border-black/10 dark:border-white/15 px-4 py-2.5 text-sm text-foreground hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors"
                   >
-                    <Captions className="size-4" /> Captions
+                    Transcript
                   </button>
+
 
                   <button
                     type="button"
