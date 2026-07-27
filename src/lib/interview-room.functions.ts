@@ -119,7 +119,43 @@ export const startSession = createServerFn({ method: "POST" })
     return { sessionId: row.id as string, opening, voice: data.voice };
   });
 
+/**
+ * Hybrid question source: Lovable AI writes the sector technicals, the client
+ * falls back to its local bank whenever this fails or returns nothing.
+ */
+export const generateQuestionPlan = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => {
+    const x = (d ?? {}) as Record<string, unknown>;
+    return {
+      sector: typeof x.sector === "string" ? x.sector.slice(0, 60) : "software",
+      role: typeof x.role === "string" ? x.role.slice(0, 120) : "",
+      level: typeof x.level === "string" ? x.level.slice(0, 20) : "Entry",
+      count: Math.max(1, Math.min(10, Number(x.count) || 3)),
+      highlights: typeof x.highlights === "string" ? x.highlights.slice(0, 2000) : "",
+    };
+  })
+  .handler(async ({ data }): Promise<{ questions: string[] }> => {
+    const { callAI, safeJson } = await import("@/lib/interview-room.server");
+    try {
+      const raw = await callAI(
+        `You write interview questions for a live spoken interview. Each question is one sentence a real interviewer would say out loud — specific, technical, no markdown, no numbering. Respond with ONLY minified JSON: {"questions":["...","..."]}`,
+        `Sector: ${data.sector}. Role: ${data.role || data.sector}. Level: ${data.level}.
+Candidate background notes: ${data.highlights || "none provided"}.
+Write exactly ${data.count} technical questions for this sector and level. For engineering sectors cover areas like thermodynamics, CAD modelling, material selection and structural stress testing.`,
+      );
+      const parsed = safeJson<{ questions?: unknown }>(raw);
+      const list = Array.isArray(parsed?.questions)
+        ? (parsed!.questions as unknown[]).filter((q): q is string => typeof q === "string")
+        : [];
+      return { questions: list.slice(0, data.count) };
+    } catch {
+      return { questions: [] };
+    }
+  });
+
 export const appendTurn = createServerFn({ method: "POST" })
+
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => {
     const x = (d ?? {}) as Record<string, unknown>;

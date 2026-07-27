@@ -17,11 +17,20 @@ import {
 } from "lucide-react";
 import { RoleSettings, type RoleSettingsValue } from "@/components/mock-interview/RoleSettings";
 import { RoomStage, type Subtitle } from "@/components/interview-room/RoomStage";
+import { SessionSetup } from "@/components/interview-room/SessionSetup";
 import { CaptionsDrawer, type CaptionLine } from "@/components/interview-room/CaptionsDrawer";
 import { DeviceErrorModal } from "@/components/interview-room/DeviceErrorModal";
 import { VoicePicker } from "@/components/interview-room/VoicePicker";
 import { DebriefPanel } from "@/components/interview-room/DebriefPanel";
 import { TRACKS } from "@/lib/mock-interview-data";
+import {
+  buildQuestionQueue,
+  DURATIONS,
+  SECTORS,
+  sectorRole,
+  type QueuedQuestion,
+  type SectorId,
+} from "@/lib/interview-plan";
 import { analyzeSpeech } from "@/lib/interview-metrics";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -38,14 +47,15 @@ import {
 import {
   appendTurn,
   finalizeSession,
+  generateQuestionPlan,
   getRoomAttempts,
   getVoicePreference,
   markSessionFailed,
-  nextTurn,
   saveVoicePreference,
   startSession,
   type Debrief,
 } from "@/lib/interview-room.functions";
+
 
 export const Route = createFileRoute("/assessment/mock-interview")({
   head: () => ({
@@ -78,13 +88,16 @@ function fmt(sec: number) {
 function InterviewRoom() {
   const startFn = useServerFn(startSession);
   const appendFn = useServerFn(appendTurn);
-  const nextFn = useServerFn(nextTurn);
+  const planFn = useServerFn(generateQuestionPlan);
   const finalizeFn = useServerFn(finalizeSession);
   const failFn = useServerFn(markSessionFailed);
   const attemptsFn = useServerFn(getRoomAttempts);
   const getVoiceFn = useServerFn(getVoicePreference);
   const saveVoiceFn = useServerFn(saveVoicePreference);
 
+  const [sector, setSector] = useState<SectorId>("engineering");
+  const [customSector, setCustomSector] = useState("");
+  const [minutes, setMinutes] = useState<number>(10);
   const [settings, setSettings] = useState<RoleSettingsValue>({
     track: "mechanical",
     role: TRACKS[0].defaultRole,
@@ -102,6 +115,8 @@ function InterviewRoom() {
   const [textMode, setTextMode] = useState(false);
   const [typed, setTyped] = useState("");
   const [handsFree, setHandsFree] = useState(true);
+  const [muted, setMuted] = useState(false);
+  const [captionsOn, setCaptionsOn] = useState(true);
   const [listening, setListening] = useState(false);
   const [aiSpeaking, setAiSpeaking] = useState(false);
   const [aiThinking, setAiThinking] = useState(false);
@@ -109,6 +124,9 @@ function InterviewRoom() {
   const [lines, setLines] = useState<CaptionLine[]>([]);
   const [captionsOpen, setCaptionsOpen] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [timeUp, setTimeUp] = useState(false);
+  const [queue, setQueue] = useState<QueuedQuestion[]>([]);
+  const [askedCount, setAskedCount] = useState(0);
   const [micLevel, setMicLevel] = useState(0);
   const [facing, setFacing] = useState(true);
   const [gazeTest, setGazeTest] = useState(false);
@@ -116,6 +134,7 @@ function InterviewRoom() {
   const [debrief, setDebrief] = useState<Debrief | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
 
   const recRef = useRef<RecognitionLike | null>(null);
   const recorderRef = useRef<{ stop: () => Promise<Blob | null> } | null>(null);
@@ -135,8 +154,15 @@ function InterviewRoom() {
   handsFreeRef.current = handsFree;
   const warnedRef = useRef(0);
   const gazeWarnRef = useRef(false);
+  const queueRef = useRef<QueuedQuestion[]>([]);
+  const queueIdxRef = useRef(0);
+  const timeUpRef = useRef(false);
+  timeUpRef.current = timeUp;
 
+  const totalSec = minutes * 60;
+  const remaining = Math.max(0, totalSec - elapsed);
   const voiceName = VOICE_NAME[voice];
+
 
   // ---------- bootstrap ----------
   useEffect(() => {
@@ -161,6 +187,16 @@ function InterviewRoom() {
     const id = window.setInterval(() => setElapsed((e) => e + 1), 1000);
     return () => window.clearInterval(id);
   }, [phase]);
+
+  // Soft time-up: warn, let the candidate finish the current answer.
+  useEffect(() => {
+    if (phase !== "live" || timeUp) return;
+    if (elapsed < minutes * 60) return;
+    setTimeUp(true);
+    toast.info("Time's up — finish your current answer and we'll wrap up.");
+  }, [elapsed, minutes, phase, timeUp]);
+
+
 
   useEffect(() => {
     if (!stream || phase !== "live") return;
@@ -391,31 +427,42 @@ function InterviewRoom() {
   const advance = useCallback(async () => {
     const id = sessionRef.current;
     if (!id) return;
+    // Time's up is a soft warning: the candidate finishes the current answer,
+    // then we close the session instead of queuing another question.
+    if (timeUpRef.current) {
+      await sayAi("That's time for today — thanks for staying with it. Let me put your feedback together.");
+      await finish(false);
+      return;
+    }
+    const next = queueRef.current[queueIdxRef.current];
+    if (!next) {
+      await finish(false);
+      return;
+    }
+    queueIdxRef.current += 1;
+    setAskedCount(queueIdxRef.current);
     setAiThinking(true);
     try {
-      const stats = analyzeSpeech(allAnswersRef.current, Math.max(1, elapsedRef.current));
-      const turn = (await nextFn({
-        data: {
-          sessionId: id,
-          gazeWarning: gazeWarnRef.current,
-          pacing: stats.wpm,
-          fillerRate: stats.fillerRate,
-        },
-      })) as { text: string; done: boolean };
-      setAiThinking(false);
+      const idx = turnIndexRef.current;
       turnIndexRef.current += 1;
-      await sayAi(turn.text);
-      if (turn.done) {
-        await finish(false);
-        return;
-      }
+      const prefix =
+        gazeWarnRef.current && next.stage !== "intro"
+          ? "I noticed you looked away — keep your eyes on me. "
+          : "";
+      const spoken = `${prefix}${next.text}`;
+      setAiThinking(false);
+      await sayAi(spoken);
+      void appendFn({
+        data: { sessionId: id, speaker: "ai", text: spoken, turnIndex: idx, metrics: { stage: next.stage } },
+      }).catch(() => undefined);
       listen();
     } catch (e) {
       setAiThinking(false);
       setDeviceError(e instanceof Error ? e.message : "The interviewer could not respond.");
       if (sessionRef.current) void failFn({ data: { sessionId: sessionRef.current, message: String(e) } }).catch(() => undefined);
     }
-  }, [failFn, finish, listen, nextFn, sayAi]);
+  }, [appendFn, failFn, finish, listen, sayAi]);
+
 
   const submitAnswer = useCallback(
     async (text: string) => {
@@ -469,23 +516,52 @@ function InterviewRoom() {
       }
     }
 
+    const plannedRole = sectorRole(sector, customSector) || settings.role;
+    const questionCount = DURATIONS.find((d) => d.minutes === minutes)?.questions ?? 5;
+    const sectorDef = SECTORS.find((s) => s.id === sector) ?? SECTORS[0];
+
     try {
       const res = (await startFn({
         data: {
-          track: settings.track,
-          role: settings.role,
+          track: sectorDef.track,
+          role: plannedRole,
           level: settings.level,
           voice,
           highlights: settings.highlights,
-          questionBudget: settings.count,
+          questionBudget: Math.min(10, questionCount),
         },
       })) as { sessionId: string; opening: string };
+
+      // Hybrid question source: AI writes the sector technicals, the local
+      // bank fills in whenever the call fails or comes back short.
+      let aiTechnicals: string[] = [];
+      try {
+        const plan = (await planFn({
+          data: {
+            sector: sector === "custom" ? customSector || "general" : sectorDef.label,
+            role: plannedRole,
+            level: settings.level,
+            count: Math.max(1, questionCount - 4),
+            highlights: settings.highlights,
+          },
+        })) as { questions: string[] };
+        aiTechnicals = plan.questions ?? [];
+      } catch {
+        /* local bank covers it */
+      }
+      const built = buildQuestionQueue(sector, questionCount, aiTechnicals);
+      queueRef.current = built;
+      queueIdxRef.current = 0;
+      setQueue(built);
+      setAskedCount(0);
 
       setStream(media);
       setSessionId(res.sessionId);
       sessionRef.current = res.sessionId;
       setLines([]);
       setElapsed(0);
+      setTimeUp(false);
+      timeUpRef.current = false;
       turnIndexRef.current = 1;
       allAnswersRef.current = "";
       gazeStatsRef.current = { good: 0, total: 0 };
@@ -501,8 +577,10 @@ function InterviewRoom() {
         recorderRef.current = createRecorder(new MediaStream(audioTracks));
       }
 
-      await sayAi(res.opening);
-      listen();
+      await sayAi(
+        `Hi, I'm ${voiceName} and I'll be running your ${minutes}-minute ${sectorDef.label.toLowerCase()} interview today. Take a breath — here's my first question.`,
+      );
+      void advance();
     } catch (e) {
       media?.getTracks().forEach((t) => t.stop());
       setBusy(false);
@@ -510,7 +588,17 @@ function InterviewRoom() {
       if (msg.toLowerCase().includes("attempt limit")) toast.error(msg);
       else setDeviceError(msg);
     }
-  }, [busy, listen, sayAi, settings, startFn, voice]);
+  }, [advance, busy, customSector, minutes, planFn, sayAi, sector, settings, startFn, voice, voiceName]);
+
+  const toggleMute = useCallback(() => {
+    setMuted((m) => {
+      const next = !m;
+      stream?.getAudioTracks().forEach((t) => (t.enabled = !next));
+      if (next) stopRecognition();
+      else if (phaseRef.current === "live" && !textMode) listen();
+      return next;
+    });
+  }, [listen, stopRecognition, stream, textMode]);
 
   const onVoiceChange = useCallback(
     (v: VoiceId) => {
@@ -519,6 +607,7 @@ function InterviewRoom() {
     },
     [saveVoiceFn],
   );
+
 
   const downloadReport = useCallback(() => {
     if (!debrief) return;
@@ -584,6 +673,15 @@ td,th{border:1px solid #e2e8f0;padding:9px 12px;font-size:13px;text-align:left}t
           <div className="space-y-5">
             {phase === "setup" && (
               <>
+                <SessionSetup
+                  sector={sector}
+                  onSector={setSector}
+                  custom={customSector}
+                  onCustom={setCustomSector}
+                  minutes={minutes}
+                  onMinutes={setMinutes}
+                  disabled={busy}
+                />
                 <RoleSettings value={settings} onChange={setSettings} />
                 <VoicePicker value={voice} onChange={onVoiceChange} />
                 {locked && (
@@ -602,9 +700,9 @@ td,th{border:1px solid #e2e8f0;padding:9px 12px;font-size:13px;text-align:left}t
                 stream={stream}
                 voice={voice}
                 aiSpeaking={aiSpeaking}
-                micLevel={micLevel}
-                subtitle={subtitle}
-                timerLabel={fmt(elapsed)}
+                micLevel={muted ? 0 : micLevel}
+                subtitle={captionsOn ? subtitle : null}
+                timerLabel={fmt(remaining)}
                 confidence={confidence}
                 recording={!!recorderRef.current}
                 cameraError={cameraError}
@@ -612,6 +710,14 @@ td,th{border:1px solid #e2e8f0;padding:9px 12px;font-size:13px;text-align:left}t
                 onGazeChange={setFacing}
               />
             )}
+
+            {phase === "live" && timeUp && (
+              <div className="rounded-[18px] border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-200 flex items-center gap-2">
+                <TriangleAlert className="size-4 shrink-0" /> Time's up — finish your current answer and {voiceName} will
+                wrap up.
+              </div>
+            )}
+
 
             {/* Control bar */}
             <div className="rounded-[18px] border border-black/[0.07] dark:border-white/10 bg-white dark:bg-white/[0.03] p-4 flex flex-wrap items-center gap-3">
@@ -641,14 +747,26 @@ td,th{border:1px solid #e2e8f0;padding:9px 12px;font-size:13px;text-align:left}t
                     <>
                       <button
                         type="button"
-                        onMouseDown={() => !handsFree && listen()}
+                        onMouseDown={() => !handsFree && !muted && listen()}
                         onMouseUp={() => !handsFree && submitAnswerRef.current(finalTextRef.current)}
                         onClick={() => handsFree && submitAnswerRef.current(finalTextRef.current)}
-                        disabled={aiSpeaking || aiThinking}
+                        disabled={aiSpeaking || aiThinking || muted}
                         className="inline-flex items-center gap-2 rounded-xl border border-black/10 dark:border-white/15 px-4 py-2.5 text-sm text-foreground hover:bg-black/[0.04] dark:hover:bg-white/[0.06] disabled:opacity-40 transition-colors"
                       >
                         {listening ? <Mic className="size-4 text-teal-500" /> : <MicOff className="size-4" />}
                         {handsFree ? "Send answer" : "Hold to talk"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={toggleMute}
+                        className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm transition-colors ${
+                          muted
+                            ? "bg-rose-500/15 text-rose-500"
+                            : "border border-black/10 dark:border-white/15 text-foreground hover:bg-black/[0.04] dark:hover:bg-white/[0.06]"
+                        }`}
+                      >
+                        {muted ? <MicOff className="size-4" /> : <Mic className="size-4" />}
+                        {muted ? "Unmute mic" : "Mute mic"}
                       </button>
                       <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
                         <input
@@ -664,11 +782,24 @@ td,th{border:1px solid #e2e8f0;padding:9px 12px;font-size:13px;text-align:left}t
 
                   <button
                     type="button"
+                    onClick={() => setCaptionsOn((c) => !c)}
+                    className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm transition-colors ${
+                      captionsOn
+                        ? "border border-black/10 dark:border-white/15 text-foreground hover:bg-black/[0.04] dark:hover:bg-white/[0.06]"
+                        : "bg-black/[0.05] dark:bg-white/[0.08] text-muted-foreground"
+                    }`}
+                  >
+                    <Captions className="size-4" /> Captions {captionsOn ? "on" : "off"}
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={() => setCaptionsOpen(true)}
                     className="inline-flex items-center gap-2 rounded-xl border border-black/10 dark:border-white/15 px-4 py-2.5 text-sm text-foreground hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors"
                   >
-                    <Captions className="size-4" /> Captions
+                    Transcript
                   </button>
+
 
                   <button
                     type="button"
@@ -744,9 +875,13 @@ td,th{border:1px solid #e2e8f0;padding:9px 12px;font-size:13px;text-align:left}t
             <div>
               <div className="text-[11px] uppercase tracking-widest text-white/40">Session</div>
               <div className="mt-1 text-sm">
-                {settings.role || TRACKS.find((t) => t.id === settings.track)?.label} · {settings.level}
+                {sectorRole(sector, customSector) || TRACKS.find((t) => t.id === settings.track)?.label} ·{" "}
+                {settings.level}
               </div>
-              <div className="text-xs text-white/50">{settings.count} question budget</div>
+              <div className="text-xs text-white/50">
+                {SECTORS.find((s) => s.id === sector)?.label} · {minutes} min ·{" "}
+                {queue.length || DURATIONS.find((d) => d.minutes === minutes)?.questions} questions
+              </div>
             </div>
 
             <div>
@@ -764,14 +899,17 @@ td,th{border:1px solid #e2e8f0;padding:9px 12px;font-size:13px;text-align:left}t
 
             <div className="grid grid-cols-2 gap-3 text-center">
               <div className="rounded-xl bg-white/5 p-3">
-                <div className="text-lg font-semibold">{fmt(elapsed)}</div>
-                <div className="text-[11px] text-white/45">Elapsed</div>
+                <div className={`text-lg font-semibold ${timeUp ? "text-amber-300" : ""}`}>{fmt(remaining)}</div>
+                <div className="text-[11px] text-white/45">Remaining</div>
               </div>
               <div className="rounded-xl bg-white/5 p-3">
-                <div className="text-lg font-semibold">{lines.filter((l) => l.speaker === "candidate").length}</div>
-                <div className="text-[11px] text-white/45">Answers</div>
+                <div className="text-lg font-semibold">
+                  {Math.min(askedCount, queue.length || askedCount)}/{queue.length || "—"}
+                </div>
+                <div className="text-[11px] text-white/45">Questions</div>
               </div>
             </div>
+
 
             <div className="text-xs text-white/50 leading-relaxed">
               {phase === "live"
