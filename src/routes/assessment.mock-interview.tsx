@@ -673,6 +673,15 @@ td,th{border:1px solid #e2e8f0;padding:9px 12px;font-size:13px;text-align:left}t
           <div className="space-y-5">
             {phase === "setup" && (
               <>
+                <SessionSetup
+                  sector={sector}
+                  onSector={setSector}
+                  custom={customSector}
+                  onCustom={setCustomSector}
+                  minutes={minutes}
+                  onMinutes={setMinutes}
+                  disabled={busy}
+                />
                 <RoleSettings value={settings} onChange={setSettings} />
                 <VoicePicker value={voice} onChange={onVoiceChange} />
                 {locked && (
@@ -691,9 +700,9 @@ td,th{border:1px solid #e2e8f0;padding:9px 12px;font-size:13px;text-align:left}t
                 stream={stream}
                 voice={voice}
                 aiSpeaking={aiSpeaking}
-                micLevel={micLevel}
-                subtitle={subtitle}
-                timerLabel={fmt(elapsed)}
+                micLevel={muted ? 0 : micLevel}
+                subtitle={captionsOn ? subtitle : null}
+                timerLabel={fmt(remaining)}
                 confidence={confidence}
                 recording={!!recorderRef.current}
                 cameraError={cameraError}
@@ -701,6 +710,14 @@ td,th{border:1px solid #e2e8f0;padding:9px 12px;font-size:13px;text-align:left}t
                 onGazeChange={setFacing}
               />
             )}
+
+            {phase === "live" && timeUp && (
+              <div className="rounded-[18px] border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-200 flex items-center gap-2">
+                <TriangleAlert className="size-4 shrink-0" /> Time's up — finish your current answer and {voiceName} will
+                wrap up.
+              </div>
+            )}
+
 
             {/* Control bar */}
             <div className="rounded-[18px] border border-black/[0.07] dark:border-white/10 bg-white dark:bg-white/[0.03] p-4 flex flex-wrap items-center gap-3">
