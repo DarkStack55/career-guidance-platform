@@ -88,13 +88,16 @@ function fmt(sec: number) {
 function InterviewRoom() {
   const startFn = useServerFn(startSession);
   const appendFn = useServerFn(appendTurn);
-  const nextFn = useServerFn(nextTurn);
+  const planFn = useServerFn(generateQuestionPlan);
   const finalizeFn = useServerFn(finalizeSession);
   const failFn = useServerFn(markSessionFailed);
   const attemptsFn = useServerFn(getRoomAttempts);
   const getVoiceFn = useServerFn(getVoicePreference);
   const saveVoiceFn = useServerFn(saveVoicePreference);
 
+  const [sector, setSector] = useState<SectorId>("engineering");
+  const [customSector, setCustomSector] = useState("");
+  const [minutes, setMinutes] = useState<number>(10);
   const [settings, setSettings] = useState<RoleSettingsValue>({
     track: "mechanical",
     role: TRACKS[0].defaultRole,
@@ -112,6 +115,8 @@ function InterviewRoom() {
   const [textMode, setTextMode] = useState(false);
   const [typed, setTyped] = useState("");
   const [handsFree, setHandsFree] = useState(true);
+  const [muted, setMuted] = useState(false);
+  const [captionsOn, setCaptionsOn] = useState(true);
   const [listening, setListening] = useState(false);
   const [aiSpeaking, setAiSpeaking] = useState(false);
   const [aiThinking, setAiThinking] = useState(false);
@@ -119,6 +124,9 @@ function InterviewRoom() {
   const [lines, setLines] = useState<CaptionLine[]>([]);
   const [captionsOpen, setCaptionsOpen] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [timeUp, setTimeUp] = useState(false);
+  const [queue, setQueue] = useState<QueuedQuestion[]>([]);
+  const [askedCount, setAskedCount] = useState(0);
   const [micLevel, setMicLevel] = useState(0);
   const [facing, setFacing] = useState(true);
   const [gazeTest, setGazeTest] = useState(false);
@@ -126,6 +134,7 @@ function InterviewRoom() {
   const [debrief, setDebrief] = useState<Debrief | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
 
   const recRef = useRef<RecognitionLike | null>(null);
   const recorderRef = useRef<{ stop: () => Promise<Blob | null> } | null>(null);
