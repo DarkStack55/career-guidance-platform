@@ -17,11 +17,20 @@ import {
 } from "lucide-react";
 import { RoleSettings, type RoleSettingsValue } from "@/components/mock-interview/RoleSettings";
 import { RoomStage, type Subtitle } from "@/components/interview-room/RoomStage";
+import { SessionSetup } from "@/components/interview-room/SessionSetup";
 import { CaptionsDrawer, type CaptionLine } from "@/components/interview-room/CaptionsDrawer";
 import { DeviceErrorModal } from "@/components/interview-room/DeviceErrorModal";
 import { VoicePicker } from "@/components/interview-room/VoicePicker";
 import { DebriefPanel } from "@/components/interview-room/DebriefPanel";
 import { TRACKS } from "@/lib/mock-interview-data";
+import {
+  buildQuestionQueue,
+  DURATIONS,
+  SECTORS,
+  sectorRole,
+  type QueuedQuestion,
+  type SectorId,
+} from "@/lib/interview-plan";
 import { analyzeSpeech } from "@/lib/interview-metrics";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -38,14 +47,15 @@ import {
 import {
   appendTurn,
   finalizeSession,
+  generateQuestionPlan,
   getRoomAttempts,
   getVoicePreference,
   markSessionFailed,
-  nextTurn,
   saveVoicePreference,
   startSession,
   type Debrief,
 } from "@/lib/interview-room.functions";
+
 
 export const Route = createFileRoute("/assessment/mock-interview")({
   head: () => ({
