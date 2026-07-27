@@ -875,9 +875,13 @@ td,th{border:1px solid #e2e8f0;padding:9px 12px;font-size:13px;text-align:left}t
             <div>
               <div className="text-[11px] uppercase tracking-widest text-white/40">Session</div>
               <div className="mt-1 text-sm">
-                {settings.role || TRACKS.find((t) => t.id === settings.track)?.label} · {settings.level}
+                {sectorRole(sector, customSector) || TRACKS.find((t) => t.id === settings.track)?.label} ·{" "}
+                {settings.level}
               </div>
-              <div className="text-xs text-white/50">{settings.count} question budget</div>
+              <div className="text-xs text-white/50">
+                {SECTORS.find((s) => s.id === sector)?.label} · {minutes} min ·{" "}
+                {queue.length || DURATIONS.find((d) => d.minutes === minutes)?.questions} questions
+              </div>
             </div>
 
             <div>
@@ -895,14 +899,17 @@ td,th{border:1px solid #e2e8f0;padding:9px 12px;font-size:13px;text-align:left}t
 
             <div className="grid grid-cols-2 gap-3 text-center">
               <div className="rounded-xl bg-white/5 p-3">
-                <div className="text-lg font-semibold">{fmt(elapsed)}</div>
-                <div className="text-[11px] text-white/45">Elapsed</div>
+                <div className={`text-lg font-semibold ${timeUp ? "text-amber-300" : ""}`}>{fmt(remaining)}</div>
+                <div className="text-[11px] text-white/45">Remaining</div>
               </div>
               <div className="rounded-xl bg-white/5 p-3">
-                <div className="text-lg font-semibold">{lines.filter((l) => l.speaker === "candidate").length}</div>
-                <div className="text-[11px] text-white/45">Answers</div>
+                <div className="text-lg font-semibold">
+                  {Math.min(askedCount, queue.length || askedCount)}/{queue.length || "—"}
+                </div>
+                <div className="text-[11px] text-white/45">Questions</div>
               </div>
             </div>
+
 
             <div className="text-xs text-white/50 leading-relaxed">
               {phase === "live"
