@@ -188,6 +188,16 @@ function InterviewRoom() {
     return () => window.clearInterval(id);
   }, [phase]);
 
+  // Soft time-up: warn, let the candidate finish the current answer.
+  useEffect(() => {
+    if (phase !== "live" || timeUp) return;
+    if (elapsed < minutes * 60) return;
+    setTimeUp(true);
+    toast.info("Time's up — finish your current answer and we'll wrap up.");
+  }, [elapsed, minutes, phase, timeUp]);
+
+
+
   useEffect(() => {
     if (!stream || phase !== "live") return;
     let meter: ReturnType<typeof createMeter> | null = null;
