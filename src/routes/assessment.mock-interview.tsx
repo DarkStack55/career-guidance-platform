@@ -154,8 +154,15 @@ function InterviewRoom() {
   handsFreeRef.current = handsFree;
   const warnedRef = useRef(0);
   const gazeWarnRef = useRef(false);
+  const queueRef = useRef<QueuedQuestion[]>([]);
+  const queueIdxRef = useRef(0);
+  const timeUpRef = useRef(false);
+  timeUpRef.current = timeUp;
 
+  const totalSec = minutes * 60;
+  const remaining = Math.max(0, totalSec - elapsed);
   const voiceName = VOICE_NAME[voice];
+
 
   // ---------- bootstrap ----------
   useEffect(() => {
