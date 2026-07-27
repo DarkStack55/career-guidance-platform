@@ -590,6 +590,15 @@ function InterviewRoom() {
     }
   }, [advance, busy, customSector, minutes, planFn, sayAi, sector, settings, startFn, voice, voiceName]);
 
+  const toggleMute = useCallback(() => {
+    setMuted((m) => {
+      const next = !m;
+      stream?.getAudioTracks().forEach((t) => (t.enabled = !next));
+      if (next) stopRecognition();
+      else if (phaseRef.current === "live" && !textMode) listen();
+      return next;
+    });
+  }, [listen, stopRecognition, stream, textMode]);
 
   const onVoiceChange = useCallback(
     (v: VoiceId) => {
@@ -598,6 +607,7 @@ function InterviewRoom() {
     },
     [saveVoiceFn],
   );
+
 
   const downloadReport = useCallback(() => {
     if (!debrief) return;
