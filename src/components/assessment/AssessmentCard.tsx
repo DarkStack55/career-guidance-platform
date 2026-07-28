@@ -57,7 +57,7 @@ export function AssessmentCard({
       <p className="relative mt-1.5 text-sm leading-relaxed text-white/60">{subtitle}</p>
 
       <Link
-        to={to}
+        to={to as never}
         className="relative mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.07] px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-white hover:text-neutral-900"
       >
         {cta}
