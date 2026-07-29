@@ -649,9 +649,18 @@ td,th{border:1px solid #e2e8f0;padding:9px 12px;font-size:13px;text-align:left}t
   return (
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-5 md:px-6 pt-10 pb-20">
+        <a
+          href="https://ai-mock-interview-si-dyh6.bolt.host"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-indigo-600 dark:text-indigo-300 hover:underline"
+        >
+          Please click this link to attend your mock interview
+        </a>
+
         <Link
           to="/assessment"
-          className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors mb-5"
+          className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors mb-5 mt-4"
         >
           <ArrowLeft className="size-3.5" /> Back to Assessment
         </Link>
