@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
+import { subpageContent, type SubCard } from "@/lib/subpage-content";
 import { ArrowLeft, Sparkles } from "lucide-react";
 
 export function SubPageShell({
@@ -46,29 +47,45 @@ export function SubPageShell({
       </div>
 
       <div className="max-w-6xl mx-auto px-6 pb-24">
-        {children ?? <ComingSoonGrid />}
+        {children ?? <SubGrid />}
       </div>
     </div>
   );
 }
 
-function ComingSoonGrid() {
-  const items = [
-    { title: "Curated content", body: "We're assembling premium modules for this section." },
-    { title: "Personalized to you", body: "Recommendations will adapt to your profile and goals." },
-    { title: "Powered by Zoiee", body: "Ask our AI concierge for guidance while we build this out." },
-  ];
+const FALLBACK: SubCard[] = [
+  { title: "Curated content", body: "We're assembling premium modules for this section." },
+  { title: "Personalized to you", body: "Recommendations will adapt to your profile and goals." },
+  { title: "Powered by Zoiee", body: "Ask our AI concierge for guidance while we build this out." },
+];
+
+function SubGrid() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const key = pathname.replace(/\/+$/, "") || "/";
+  const items = subpageContent[key] ?? FALLBACK;
+
   return (
     <div className="mt-8 grid gap-4 md:grid-cols-3">
-      {items.map((i) => (
-        <div
-          key={i.title}
-          className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 hover:bg-white/[0.06] transition-colors"
-        >
-          <div className="text-sm font-medium text-white">{i.title}</div>
-          <p className="mt-2 text-sm text-white/60 leading-relaxed">{i.body}</p>
-        </div>
-      ))}
+      {items.map((i) => {
+        const inner = (
+          <>
+            <div className="text-sm font-medium text-white">{i.title}</div>
+            <p className="mt-2 text-sm text-white/60 leading-relaxed">{i.body}</p>
+            {i.to && <div className="mt-4 text-xs text-cyan-300">Open →</div>}
+          </>
+        );
+        const cls =
+          "block rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 hover:bg-white/[0.06] transition-colors";
+        return i.to ? (
+          <Link key={i.title} to={i.to} className={cls}>
+            {inner}
+          </Link>
+        ) : (
+          <div key={i.title} className={cls}>
+            {inner}
+          </div>
+        );
+      })}
     </div>
   );
 }

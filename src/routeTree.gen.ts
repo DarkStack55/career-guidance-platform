@@ -37,6 +37,12 @@ import { Route as AdminLoginRouteImport } from './routes/admin-login'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ScholarshipsIndexRouteImport } from './routes/scholarships.index'
+import { Route as RoadmapIndexRouteImport } from './routes/roadmap.index'
+import { Route as MentorsIndexRouteImport } from './routes/mentors.index'
+import { Route as InternshipsIndexRouteImport } from './routes/internships.index'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as AssessmentIndexRouteImport } from './routes/assessment.index'
 import { Route as ScholarshipsNeedRouteImport } from './routes/scholarships.need'
 import { Route as ScholarshipsMeritRouteImport } from './routes/scholarships.merit'
@@ -226,6 +232,36 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ScholarshipsIndexRoute = ScholarshipsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ScholarshipsRoute,
+} as any)
+const RoadmapIndexRoute = RoadmapIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => RoadmapRoute,
+} as any)
+const MentorsIndexRoute = MentorsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MentorsRoute,
+} as any)
+const InternshipsIndexRoute = InternshipsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => InternshipsRoute,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BlogRoute,
 } as any)
 const AssessmentIndexRoute = AssessmentIndexRouteImport.update({
   id: '/',
@@ -550,6 +586,12 @@ export interface FileRoutesByFullPath {
   '/scholarships/merit': typeof ScholarshipsMeritRoute
   '/scholarships/need': typeof ScholarshipsNeedRoute
   '/assessment/': typeof AssessmentIndexRoute
+  '/blog/': typeof BlogIndexRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/internships/': typeof InternshipsIndexRoute
+  '/mentors/': typeof MentorsIndexRoute
+  '/roadmap/': typeof RoadmapIndexRoute
+  '/scholarships/': typeof ScholarshipsIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -561,25 +603,19 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/admin-login': typeof AdminLoginRoute
-  '/blog': typeof BlogRouteWithChildren
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/courses': typeof CoursesRoute
-  '/dashboard': typeof DashboardRouteWithChildren
   '/email-preview': typeof EmailPreviewRoute
-  '/internships': typeof InternshipsRouteWithChildren
   '/jobs': typeof JobsRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
-  '/mentors': typeof MentorsRouteWithChildren
   '/personality': typeof PersonalityRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/resources': typeof ResourcesRoute
   '/resume': typeof ResumeRoute
-  '/roadmap': typeof RoadmapRouteWithChildren
   '/salary': typeof SalaryRoute
-  '/scholarships': typeof ScholarshipsRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/skills': typeof SkillsRoute
   '/success-stories': typeof SuccessStoriesRoute
@@ -628,6 +664,12 @@ export interface FileRoutesByTo {
   '/scholarships/merit': typeof ScholarshipsMeritRoute
   '/scholarships/need': typeof ScholarshipsNeedRoute
   '/assessment': typeof AssessmentIndexRoute
+  '/blog': typeof BlogIndexRoute
+  '/dashboard': typeof DashboardIndexRoute
+  '/internships': typeof InternshipsIndexRoute
+  '/mentors': typeof MentorsIndexRoute
+  '/roadmap': typeof RoadmapIndexRoute
+  '/scholarships': typeof ScholarshipsIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -708,6 +750,12 @@ export interface FileRoutesById {
   '/scholarships/merit': typeof ScholarshipsMeritRoute
   '/scholarships/need': typeof ScholarshipsNeedRoute
   '/assessment/': typeof AssessmentIndexRoute
+  '/blog/': typeof BlogIndexRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/internships/': typeof InternshipsIndexRoute
+  '/mentors/': typeof MentorsIndexRoute
+  '/roadmap/': typeof RoadmapIndexRoute
+  '/scholarships/': typeof ScholarshipsIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -789,6 +837,12 @@ export interface FileRouteTypes {
     | '/scholarships/merit'
     | '/scholarships/need'
     | '/assessment/'
+    | '/blog/'
+    | '/dashboard/'
+    | '/internships/'
+    | '/mentors/'
+    | '/roadmap/'
+    | '/scholarships/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/lovable/email/auth/preview'
@@ -800,25 +854,19 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/admin-login'
-    | '/blog'
     | '/compare'
     | '/contact'
     | '/courses'
-    | '/dashboard'
     | '/email-preview'
-    | '/internships'
     | '/jobs'
     | '/login'
     | '/mcp'
-    | '/mentors'
     | '/personality'
     | '/profile'
     | '/reset-password'
     | '/resources'
     | '/resume'
-    | '/roadmap'
     | '/salary'
-    | '/scholarships'
     | '/sitemap.xml'
     | '/skills'
     | '/success-stories'
@@ -867,6 +915,12 @@ export interface FileRouteTypes {
     | '/scholarships/merit'
     | '/scholarships/need'
     | '/assessment'
+    | '/blog'
+    | '/dashboard'
+    | '/internships'
+    | '/mentors'
+    | '/roadmap'
+    | '/scholarships'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/lovable/email/auth/preview'
@@ -946,6 +1000,12 @@ export interface FileRouteTypes {
     | '/scholarships/merit'
     | '/scholarships/need'
     | '/assessment/'
+    | '/blog/'
+    | '/dashboard/'
+    | '/internships/'
+    | '/mentors/'
+    | '/roadmap/'
+    | '/scholarships/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/lovable/email/auth/preview'
@@ -1192,6 +1252,48 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/scholarships/': {
+      id: '/scholarships/'
+      path: '/'
+      fullPath: '/scholarships/'
+      preLoaderRoute: typeof ScholarshipsIndexRouteImport
+      parentRoute: typeof ScholarshipsRoute
+    }
+    '/roadmap/': {
+      id: '/roadmap/'
+      path: '/'
+      fullPath: '/roadmap/'
+      preLoaderRoute: typeof RoadmapIndexRouteImport
+      parentRoute: typeof RoadmapRoute
+    }
+    '/mentors/': {
+      id: '/mentors/'
+      path: '/'
+      fullPath: '/mentors/'
+      preLoaderRoute: typeof MentorsIndexRouteImport
+      parentRoute: typeof MentorsRoute
+    }
+    '/internships/': {
+      id: '/internships/'
+      path: '/'
+      fullPath: '/internships/'
+      preLoaderRoute: typeof InternshipsIndexRouteImport
+      parentRoute: typeof InternshipsRoute
+    }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/blog/': {
+      id: '/blog/'
+      path: '/'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof BlogRoute
     }
     '/assessment/': {
       id: '/assessment/'
@@ -1569,12 +1671,14 @@ interface BlogRouteChildren {
   BlogAdviceRoute: typeof BlogAdviceRoute
   BlogNewsRoute: typeof BlogNewsRoute
   BlogStoriesRoute: typeof BlogStoriesRoute
+  BlogIndexRoute: typeof BlogIndexRoute
 }
 
 const BlogRouteChildren: BlogRouteChildren = {
   BlogAdviceRoute: BlogAdviceRoute,
   BlogNewsRoute: BlogNewsRoute,
   BlogStoriesRoute: BlogStoriesRoute,
+  BlogIndexRoute: BlogIndexRoute,
 }
 
 const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
@@ -1586,6 +1690,7 @@ interface DashboardRouteChildren {
   DashboardProfileRoute: typeof DashboardProfileRoute
   DashboardSavedRoute: typeof DashboardSavedRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
@@ -1595,6 +1700,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardProfileRoute: DashboardProfileRoute,
   DashboardSavedRoute: DashboardSavedRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
@@ -1607,6 +1713,7 @@ interface InternshipsRouteChildren {
   InternshipsRemoteRoute: typeof InternshipsRemoteRoute
   InternshipsStartupRoute: typeof InternshipsStartupRoute
   InternshipsSummerRoute: typeof InternshipsSummerRoute
+  InternshipsIndexRoute: typeof InternshipsIndexRoute
 }
 
 const InternshipsRouteChildren: InternshipsRouteChildren = {
@@ -1615,6 +1722,7 @@ const InternshipsRouteChildren: InternshipsRouteChildren = {
   InternshipsRemoteRoute: InternshipsRemoteRoute,
   InternshipsStartupRoute: InternshipsStartupRoute,
   InternshipsSummerRoute: InternshipsSummerRoute,
+  InternshipsIndexRoute: InternshipsIndexRoute,
 }
 
 const InternshipsRouteWithChildren = InternshipsRoute._addFileChildren(
@@ -1627,6 +1735,7 @@ interface MentorsRouteChildren {
   MentorsFindRoute: typeof MentorsFindRoute
   MentorsSessionsRoute: typeof MentorsSessionsRoute
   MentorsTopRoute: typeof MentorsTopRoute
+  MentorsIndexRoute: typeof MentorsIndexRoute
 }
 
 const MentorsRouteChildren: MentorsRouteChildren = {
@@ -1635,6 +1744,7 @@ const MentorsRouteChildren: MentorsRouteChildren = {
   MentorsFindRoute: MentorsFindRoute,
   MentorsSessionsRoute: MentorsSessionsRoute,
   MentorsTopRoute: MentorsTopRoute,
+  MentorsIndexRoute: MentorsIndexRoute,
 }
 
 const MentorsRouteWithChildren =
@@ -1647,6 +1757,7 @@ interface RoadmapRouteChildren {
   RoadmapMilestonesRoute: typeof RoadmapMilestonesRoute
   RoadmapResourcesRoute: typeof RoadmapResourcesRoute
   RoadmapTechRoute: typeof RoadmapTechRoute
+  RoadmapIndexRoute: typeof RoadmapIndexRoute
 }
 
 const RoadmapRouteChildren: RoadmapRouteChildren = {
@@ -1656,6 +1767,7 @@ const RoadmapRouteChildren: RoadmapRouteChildren = {
   RoadmapMilestonesRoute: RoadmapMilestonesRoute,
   RoadmapResourcesRoute: RoadmapResourcesRoute,
   RoadmapTechRoute: RoadmapTechRoute,
+  RoadmapIndexRoute: RoadmapIndexRoute,
 }
 
 const RoadmapRouteWithChildren =
@@ -1667,6 +1779,7 @@ interface ScholarshipsRouteChildren {
   ScholarshipsDiversityRoute: typeof ScholarshipsDiversityRoute
   ScholarshipsMeritRoute: typeof ScholarshipsMeritRoute
   ScholarshipsNeedRoute: typeof ScholarshipsNeedRoute
+  ScholarshipsIndexRoute: typeof ScholarshipsIndexRoute
 }
 
 const ScholarshipsRouteChildren: ScholarshipsRouteChildren = {
@@ -1675,6 +1788,7 @@ const ScholarshipsRouteChildren: ScholarshipsRouteChildren = {
   ScholarshipsDiversityRoute: ScholarshipsDiversityRoute,
   ScholarshipsMeritRoute: ScholarshipsMeritRoute,
   ScholarshipsNeedRoute: ScholarshipsNeedRoute,
+  ScholarshipsIndexRoute: ScholarshipsIndexRoute,
 }
 
 const ScholarshipsRouteWithChildren = ScholarshipsRoute._addFileChildren(
