@@ -27,6 +27,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as JobsRouteImport } from './routes/jobs'
 import { Route as InternshipsRouteImport } from './routes/internships'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as EmailPreviewRouteImport } from './routes/email-preview'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CoursesRouteImport } from './routes/courses'
@@ -182,6 +183,11 @@ const InternshipsRoute = InternshipsRouteImport.update({
 const HowItWorksRoute = HowItWorksRouteImport.update({
   id: '/how-it-works',
   path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesRoute = FeaturesRouteImport.update({
+  id: '/features',
+  path: '/features',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmailPreviewRoute = EmailPreviewRouteImport.update({
@@ -531,6 +537,7 @@ export interface FileRoutesByFullPath {
   '/courses': typeof CoursesRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/email-preview': typeof EmailPreviewRoute
+  '/features': typeof FeaturesRoute
   '/how-it-works': typeof HowItWorksRoute
   '/internships': typeof InternshipsRouteWithChildren
   '/jobs': typeof JobsRoute
@@ -614,6 +621,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/courses': typeof CoursesRoute
   '/email-preview': typeof EmailPreviewRoute
+  '/features': typeof FeaturesRoute
   '/how-it-works': typeof HowItWorksRoute
   '/jobs': typeof JobsRoute
   '/login': typeof LoginRoute
@@ -697,6 +705,7 @@ export interface FileRoutesById {
   '/courses': typeof CoursesRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/email-preview': typeof EmailPreviewRoute
+  '/features': typeof FeaturesRoute
   '/how-it-works': typeof HowItWorksRoute
   '/internships': typeof InternshipsRouteWithChildren
   '/jobs': typeof JobsRoute
@@ -785,6 +794,7 @@ export interface FileRouteTypes {
     | '/courses'
     | '/dashboard'
     | '/email-preview'
+    | '/features'
     | '/how-it-works'
     | '/internships'
     | '/jobs'
@@ -868,6 +878,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/courses'
     | '/email-preview'
+    | '/features'
     | '/how-it-works'
     | '/jobs'
     | '/login'
@@ -950,6 +961,7 @@ export interface FileRouteTypes {
     | '/courses'
     | '/dashboard'
     | '/email-preview'
+    | '/features'
     | '/how-it-works'
     | '/internships'
     | '/jobs'
@@ -1037,6 +1049,7 @@ export interface RootRouteChildren {
   CoursesRoute: typeof CoursesRoute
   DashboardRoute: typeof DashboardRouteWithChildren
   EmailPreviewRoute: typeof EmailPreviewRoute
+  FeaturesRoute: typeof FeaturesRoute
   HowItWorksRoute: typeof HowItWorksRoute
   InternshipsRoute: typeof InternshipsRouteWithChildren
   JobsRoute: typeof JobsRoute
@@ -1194,6 +1207,13 @@ declare module '@tanstack/react-router' {
       path: '/how-it-works'
       fullPath: '/how-it-works'
       preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features': {
+      id: '/features'
+      path: '/features'
+      fullPath: '/features'
+      preLoaderRoute: typeof FeaturesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/email-preview': {
@@ -1827,6 +1847,7 @@ const rootRouteChildren: RootRouteChildren = {
   CoursesRoute: CoursesRoute,
   DashboardRoute: DashboardRouteWithChildren,
   EmailPreviewRoute: EmailPreviewRoute,
+  FeaturesRoute: FeaturesRoute,
   HowItWorksRoute: HowItWorksRoute,
   InternshipsRoute: InternshipsRouteWithChildren,
   JobsRoute: JobsRoute,
