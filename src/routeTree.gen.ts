@@ -20,6 +20,7 @@ import { Route as ResumeRouteImport } from './routes/resume'
 import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PersonalityRouteImport } from './routes/personality'
 import { Route as MentorsRouteImport } from './routes/mentors'
 import { Route as McpRouteImport } from './routes/mcp'
@@ -148,6 +149,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PersonalityRoute = PersonalityRouteImport.update({
@@ -545,6 +551,7 @@ export interface FileRoutesByFullPath {
   '/mcp': typeof McpRoute
   '/mentors': typeof MentorsRouteWithChildren
   '/personality': typeof PersonalityRoute
+  '/pricing': typeof PricingRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/resources': typeof ResourcesRoute
@@ -627,6 +634,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/personality': typeof PersonalityRoute
+  '/pricing': typeof PricingRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/resources': typeof ResourcesRoute
@@ -713,6 +721,7 @@ export interface FileRoutesById {
   '/mcp': typeof McpRoute
   '/mentors': typeof MentorsRouteWithChildren
   '/personality': typeof PersonalityRoute
+  '/pricing': typeof PricingRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/resources': typeof ResourcesRoute
@@ -802,6 +811,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/mentors'
     | '/personality'
+    | '/pricing'
     | '/profile'
     | '/reset-password'
     | '/resources'
@@ -884,6 +894,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/mcp'
     | '/personality'
+    | '/pricing'
     | '/profile'
     | '/reset-password'
     | '/resources'
@@ -969,6 +980,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/mentors'
     | '/personality'
+    | '/pricing'
     | '/profile'
     | '/reset-password'
     | '/resources'
@@ -1057,6 +1069,7 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRoute
   MentorsRoute: typeof MentorsRouteWithChildren
   PersonalityRoute: typeof PersonalityRoute
+  PricingRoute: typeof PricingRoute
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ResourcesRoute: typeof ResourcesRoute
@@ -1158,6 +1171,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/personality': {
@@ -1855,6 +1875,7 @@ const rootRouteChildren: RootRouteChildren = {
   McpRoute: McpRoute,
   MentorsRoute: MentorsRouteWithChildren,
   PersonalityRoute: PersonalityRoute,
+  PricingRoute: PricingRoute,
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ResourcesRoute: ResourcesRoute,
