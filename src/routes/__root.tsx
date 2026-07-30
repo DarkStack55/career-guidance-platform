@@ -141,7 +141,7 @@ function RootAppContent() {
         {!onAuthRoute && <AmbientBackground />}
         <div className="relative min-h-screen flex flex-col text-foreground">
           {!onAuthRoute && <Navbar />}
-          <main className="flex-1">
+          <main className="flex-1" data-auth-route={onAuthRoute ? "1" : undefined}>
             <Outlet />
           </main>
           {!onAuthRoute && <Footer />}

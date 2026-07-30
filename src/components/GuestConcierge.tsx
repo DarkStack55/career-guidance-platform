@@ -241,19 +241,11 @@ export function GuestConcierge() {
         .getSession()
         .catch(() => ({ data: { session: null } as { session: null } }));
       const token = sessionData.session?.access_token;
-      if (!token) {
-        // Server now requires auth for the paid AI gateway. Prompt sign-in.
-        setMsgs(history);
-        setStreaming(false);
-        toast.info("Sign in to chat with Zoiee — it keeps our AI free of abuse.");
-        if (nextCount >= GUEST_LIMIT) openLoginPage();
-        return;
-      }
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ messages: history }),
       });
