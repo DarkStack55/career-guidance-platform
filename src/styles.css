@@ -126,6 +126,53 @@
   box-shadow: 0 12px 32px 0 rgba(15,23,42,0.10);
 }
 
+/* ---------- Light-mode legibility rescue ----------
+   Many page components hardcode white text / white translucent surfaces that
+   were designed for the dark cockpit. In light mode those become invisible.
+   Scope: page content only (auth screens stay intentionally dark). */
+main:not([data-auth-route]) {
+  --lm-ink: #0f172a;
+}
+:root:not(.dark) main:not([data-auth-route]) :is(
+  .text-white, .text-white\/95, .text-white\/90, .text-white\/85, .text-white\/80
+) { color: var(--lm-ink) !important; }
+
+:root:not(.dark) main:not([data-auth-route]) :is(
+  .text-white\/70, .text-white\/60, .text-white\/50, .text-white\/40
+) { color: rgba(15, 23, 42, 0.65) !important; }
+
+:root:not(.dark) main:not([data-auth-route]) :is(
+  .bg-white\/5, .bg-white\/10, .bg-white\/\[0\.03\], .bg-white\/\[0\.05\]
+) { background-color: rgba(15, 23, 42, 0.05) !important; }
+
+:root:not(.dark) main:not([data-auth-route]) :is(
+  .bg-white\/15, .bg-white\/20
+) { background-color: rgba(15, 23, 42, 0.08) !important; }
+
+:root:not(.dark) main:not([data-auth-route]) :is(
+  .border-white\/5, .border-white\/10, .border-white\/15, .border-white\/20, .border-white\/30
+) { border-color: rgba(15, 23, 42, 0.14) !important; }
+
+/* Buttons/links that keep a solid dark or tinted background must keep light text */
+:root:not(.dark) main:not([data-auth-route]) :is(
+  .bg-primary, .bg-accent, .bg-foreground, .bg-slate-900, .bg-black
+) :is(.text-white, span, svg) { color: inherit !important; }
+:root:not(.dark) main:not([data-auth-route]) :is(.bg-primary, .bg-accent) {
+  color: #ffffff !important;
+}
+:root:not(.dark) main:not([data-auth-route]) :is(.bg-slate-900, .bg-black) {
+  color: #ffffff !important;
+}
+
+/* Inputs/selects/textarea: never white-on-white */
+:root:not(.dark) main:not([data-auth-route]) :is(input, textarea, select) {
+  color: var(--lm-ink);
+}
+:root:not(.dark) main:not([data-auth-route]) ::placeholder {
+  color: rgba(15, 23, 42, 0.45);
+}
+
+
 
 @keyframes float-a { 0%,100% { transform: translateY(-5px); } 50% { transform: translateY(5px); } }
 @keyframes float-b { 0%,100% { transform: translateY(4px); } 50% { transform: translateY(-6px); } }
