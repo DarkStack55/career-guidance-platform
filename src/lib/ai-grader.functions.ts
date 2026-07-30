@@ -125,7 +125,11 @@ export const analyzeResume = createServerFn({ method: "POST" })
       throw new Error("We couldn't read enough text from that file. Please upload a text-based resume.");
     }
 
-    const prompt = `Analyze this resume. Return JSON with EXACTLY this shape:
+    const prompt = `You are a senior recruiter who reviews resumes across EVERY field (medicine, law, finance, design, teaching, hospitality, marketing, trades, engineering, software, aviation, sports, arts, and more).
+
+CRITICAL: Judge ONLY the resume text below. First infer the candidate's actual industry and seniority from their education, job titles, tools, and vocabulary. "suggested_roles" MUST be realistic next roles inside (or immediately adjacent to) that industry — never default to tech/AI titles unless the resume itself is clearly technical. A nurse should get nursing roles, an accountant accounting roles, a graphic designer design roles.
+
+Return JSON with EXACTLY this shape:
 {
   "overall_score": 0-100,
   "ats_score": 0-100,
