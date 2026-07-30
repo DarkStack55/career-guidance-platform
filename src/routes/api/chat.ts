@@ -75,38 +75,46 @@ export const Route = createFileRoute("/api/chat")({
           return jsonError(400, "No messages provided");
         }
 
-        // ---- Enforce server-side per-user daily quota via service role ----
-        // (RLS on public.chat_usage is enabled; only service_role writes.)
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const today = new Date().toISOString().slice(0, 10); // UTC yyyy-mm-dd
-        const { data: usageRow, error: usageErr } = await supabaseAdmin
-          .from("chat_usage")
-          .select("count")
-          .eq("user_id", userId)
-          .eq("day", today)
-          .maybeSingle();
-        if (usageErr) {
-          console.error("chat_usage read failed", usageErr);
-          return jsonError(500, "Usage check failed");
+        // ---- Guests: small free allowance, no DB accounting ----
+        if (!userId) {
+          if (messages.filter((m) => m.role === "user").length > 3) {
+            return jsonError(401, "Free guest questions used up. Please sign in to continue.");
+          }
+        } else {
+          // ---- Enforce server-side per-user daily quota via service role ----
+          // (RLS on public.chat_usage is enabled; only service_role writes.)
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const today = new Date().toISOString().slice(0, 10); // UTC yyyy-mm-dd
+          const { data: usageRow, error: usageErr } = await supabaseAdmin
+            .from("chat_usage")
+            .select("count")
+            .eq("user_id", userId)
+            .eq("day", today)
+            .maybeSingle();
+          if (usageErr) {
+            console.error("chat_usage read failed", usageErr);
+            return jsonError(500, "Usage check failed");
+          }
+          const current = usageRow?.count ?? 0;
+          if (current >= DAILY_LIMIT) {
+            return jsonError(
+              429,
+              `Daily limit reached (${DAILY_LIMIT} messages). Please try again tomorrow.`,
+            );
+          }
+          // Reserve one request BEFORE calling the paid gateway.
+          const { error: upsertErr } = await supabaseAdmin
+            .from("chat_usage")
+            .upsert(
+              { user_id: userId, day: today, count: current + 1, updated_at: new Date().toISOString() },
+              { onConflict: "user_id,day" },
+            );
+          if (upsertErr) {
+            console.error("chat_usage upsert failed", upsertErr);
+            return jsonError(500, "Usage recording failed");
+          }
         }
-        const current = usageRow?.count ?? 0;
-        if (current >= DAILY_LIMIT) {
-          return jsonError(
-            429,
-            `Daily limit reached (${DAILY_LIMIT} messages). Please try again tomorrow.`,
-          );
-        }
-        // Reserve one request BEFORE calling the paid gateway.
-        const { error: upsertErr } = await supabaseAdmin
-          .from("chat_usage")
-          .upsert(
-            { user_id: userId, day: today, count: current + 1, updated_at: new Date().toISOString() },
-            { onConflict: "user_id,day" },
-          );
-        if (upsertErr) {
-          console.error("chat_usage upsert failed", upsertErr);
-          return jsonError(500, "Usage recording failed");
-        }
+
 
         // ---- Forward to Lovable AI gateway (streaming) ----
         const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
