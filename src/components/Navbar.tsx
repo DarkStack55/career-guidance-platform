@@ -28,11 +28,11 @@ const navigation: NavItem[] = [
     label: "Home",
     to: "/",
     children: [
-      { label: "How It Works", to: "/#how" },
-      { label: "Success Stories", to: "/#stories" },
-      { label: "Features", to: "/#features" },
-      { label: "Pricing", to: "/#pricing" },
-      { label: "FAQ", to: "/#faq" },
+      { label: "How It Works", to: "/how-it-works" },
+      { label: "Success Stories", to: "/success-stories" },
+      { label: "Features", to: "/features" },
+      { label: "Pricing", to: "/pricing" },
+      { label: "FAQ", to: "/faq" },
     ],
   },
   {
