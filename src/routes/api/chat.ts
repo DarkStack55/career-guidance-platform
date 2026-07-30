@@ -45,22 +45,20 @@ export const Route = createFileRoute("/api/chat")({
           return jsonError(500, "AI gateway not configured");
         }
 
-        // ---- Require a valid Supabase session (server-side verification) ----
+        // ---- Session is optional: guests get a small free allowance ----
         const authHeader = request.headers.get("authorization") ?? "";
-        if (!authHeader.toLowerCase().startsWith("bearer ")) {
-          return jsonError(401, "Authentication required. Please sign in to use the AI assistant.");
+        let userId: string | undefined;
+        if (authHeader.toLowerCase().startsWith("bearer ")) {
+          const token = authHeader.slice(7).trim();
+          if (token) {
+            const supabaseAuth = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+              auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+            });
+            const { data: claimsData } = await supabaseAuth.auth.getClaims(token);
+            userId = claimsData?.claims?.sub;
+          }
         }
-        const token = authHeader.slice(7).trim();
-        if (!token) return jsonError(401, "Authentication required.");
 
-        const supabaseAuth = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-          auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
-        });
-        const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
-        const userId = claimsData?.claims?.sub;
-        if (claimsError || !userId) {
-          return jsonError(401, "Invalid or expired session. Please sign in again.");
-        }
 
         // ---- Parse and validate body ----
         let body: { messages?: Msg[] };
