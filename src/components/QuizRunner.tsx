@@ -21,11 +21,15 @@ export function QuizRunner({
 }) {
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [picked, setPicked] = useState<Record<string, number>>({});
   const [submitting, setSubmitting] = useState(false);
   const q = questions[idx];
   const pct = Math.round(((idx + (answers[q.id] != null ? 1 : 0)) / questions.length) * 100);
 
-  const pick = (v: number) => setAnswers((a) => ({ ...a, [q.id]: v }));
+  const pick = (optIndex: number, v: number) => {
+    setPicked((p) => ({ ...p, [q.id]: optIndex }));
+    setAnswers((a) => ({ ...a, [q.id]: v }));
+  };
   const next = () => setIdx((i) => Math.min(questions.length - 1, i + 1));
   const back = () => setIdx((i) => Math.max(0, i - 1));
 
