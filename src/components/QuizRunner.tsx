@@ -21,11 +21,15 @@ export function QuizRunner({
 }) {
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [picked, setPicked] = useState<Record<string, number>>({});
   const [submitting, setSubmitting] = useState(false);
   const q = questions[idx];
   const pct = Math.round(((idx + (answers[q.id] != null ? 1 : 0)) / questions.length) * 100);
 
-  const pick = (v: number) => setAnswers((a) => ({ ...a, [q.id]: v }));
+  const pick = (optIndex: number, v: number) => {
+    setPicked((p) => ({ ...p, [q.id]: optIndex }));
+    setAnswers((a) => ({ ...a, [q.id]: v }));
+  };
   const next = () => setIdx((i) => Math.min(questions.length - 1, i + 1));
   const back = () => setIdx((i) => Math.max(0, i - 1));
 
@@ -58,13 +62,13 @@ export function QuizRunner({
 
       <h3 className="text-lg md:text-xl font-medium text-white mb-5">{q.prompt}</h3>
       <div className="grid gap-2">
-        {q.options.map((o) => {
-          const selected = answers[q.id] === o.value;
+        {q.options.map((o, oi) => {
+          const selected = picked[q.id] === oi;
           return (
             <button
-              key={o.label}
+              key={`${o.label}-${oi}`}
               type="button"
-              onClick={() => pick(o.value)}
+              onClick={() => pick(oi, o.value)}
               className={`text-left rounded-xl border px-4 py-3 text-sm transition-colors ${
                 selected
                   ? "border-cyan-400/60 bg-cyan-400/10 text-white"
