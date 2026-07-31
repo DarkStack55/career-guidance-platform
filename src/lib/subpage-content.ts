@@ -24,7 +24,7 @@ export const subpageContent: Record<string, SubCard[]> = {
   "/dashboard/analytics": [
     { title: "Readiness trend", body: "How your overall readiness score moved across assessments.", to: "/assessment" },
     { title: "Skill velocity", body: "Which skills grew fastest over the last 90 days.", to: "/skills" },
-    { title: "Market comparison", body: "Your profile against salary bands for your target role.", to: "/salary" },
+    { title: "Market comparison", body: "Your profile against salary bands for your target role." },
   ],
   "/dashboard/badges": [
     { title: "Assessment badges", body: "Earned by completing each of the four intelligence modules.", to: "/assessment" },
@@ -41,12 +41,12 @@ export const subpageContent: Record<string, SubCard[]> = {
   "/blog/advice": [
     { title: "Switching careers at 30+", body: "A practical 12-week plan for pivoting without starting from zero." },
     { title: "Resume lines that convert", body: "How to phrase impact so screeners stop skimming past you.", to: "/assessment/resume" },
-    { title: "Negotiating your first offer", body: "Scripts and benchmarks for the salary conversation.", to: "/salary" },
+    { title: "Negotiating your first offer", body: "Scripts and benchmarks for the salary conversation." },
   ],
   "/blog/news": [
     { title: "AI hiring shifts", body: "What automated screening means for applicants this year." },
     { title: "Sector demand report", body: "Which domains are adding headcount and which are freezing.", to: "/compare" },
-    { title: "Pay transparency laws", body: "Where posted salary ranges are now mandatory.", to: "/salary" },
+    { title: "Pay transparency laws", body: "Where posted salary ranges are now mandatory." },
   ],
   "/blog/stories": [
     { title: "Mechanical to ML", body: "How Aarav moved from CAD work into an applied ML team in 14 months." },
@@ -153,7 +153,7 @@ export const subpageContent: Record<string, SubCard[]> = {
   ],
   "/internships/startup": [
     { title: "Early-stage teams", body: "Seed to Series B startups hiring interns with real ownership." },
-    { title: "Equity & stipends", body: "What compensation looks like outside big-company bands.", to: "/salary" },
+    { title: "Equity & stipends", body: "What compensation looks like outside big-company bands." },
     { title: "What they screen for", body: "Shipping speed and initiative over credentials." },
   ],
   "/internships/corporate": [
