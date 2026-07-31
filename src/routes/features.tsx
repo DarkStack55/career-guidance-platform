@@ -27,7 +27,6 @@ const features = [
   { icon: Map, title: "Personalised roadmaps", body: "Week-by-week plans across tech, business, creative and AI tracks with milestone tracking.", to: "/roadmap" },
   { icon: Briefcase, title: "Job & application tracker", body: "Save roles, apply, and follow every application through to offer in one live board.", to: "/jobs" },
   { icon: GraduationCap, title: "Scholarships & internships", body: "A searchable database of funding and internship programmes with deadline reminders.", to: "/scholarships" },
-  { icon: LineChart, title: "Salary intelligence", body: "Compare pay bands by role, region and experience before you negotiate.", to: "/salary" },
 ];
 
 function Features() {
