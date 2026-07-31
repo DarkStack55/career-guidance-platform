@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { PageHero } from "@/components/PageHero";
 import {
-  Bot, FileText, Video, Radar, Map, Briefcase, GraduationCap, LineChart, ArrowRight,
+  Bot, FileText, Video, Radar, Map, Briefcase, GraduationCap, ArrowRight,
 } from "lucide-react";
 
 export const Route = createFileRoute("/features")({
