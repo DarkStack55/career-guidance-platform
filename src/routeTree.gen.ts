@@ -14,7 +14,6 @@ import { Route as SuccessStoriesRouteImport } from './routes/success-stories'
 import { Route as SkillsRouteImport } from './routes/skills'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ScholarshipsRouteImport } from './routes/scholarships'
-import { Route as SalaryRouteImport } from './routes/salary'
 import { Route as RoadmapRouteImport } from './routes/roadmap'
 import { Route as ResumeRouteImport } from './routes/resume'
 import { Route as ResourcesRouteImport } from './routes/resources'
@@ -120,11 +119,6 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const ScholarshipsRoute = ScholarshipsRouteImport.update({
   id: '/scholarships',
   path: '/scholarships',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SalaryRoute = SalaryRouteImport.update({
-  id: '/salary',
-  path: '/salary',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RoadmapRoute = RoadmapRouteImport.update({
@@ -564,7 +558,6 @@ export interface FileRoutesByFullPath {
   '/resources': typeof ResourcesRoute
   '/resume': typeof ResumeRoute
   '/roadmap': typeof RoadmapRouteWithChildren
-  '/salary': typeof SalaryRoute
   '/scholarships': typeof ScholarshipsRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/skills': typeof SkillsRoute
@@ -647,7 +640,6 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/resources': typeof ResourcesRoute
   '/resume': typeof ResumeRoute
-  '/salary': typeof SalaryRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/skills': typeof SkillsRoute
   '/success-stories': typeof SuccessStoriesRoute
@@ -736,7 +728,6 @@ export interface FileRoutesById {
   '/resources': typeof ResourcesRoute
   '/resume': typeof ResumeRoute
   '/roadmap': typeof RoadmapRouteWithChildren
-  '/salary': typeof SalaryRoute
   '/scholarships': typeof ScholarshipsRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/skills': typeof SkillsRoute
@@ -827,7 +818,6 @@ export interface FileRouteTypes {
     | '/resources'
     | '/resume'
     | '/roadmap'
-    | '/salary'
     | '/scholarships'
     | '/sitemap.xml'
     | '/skills'
@@ -910,7 +900,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/resources'
     | '/resume'
-    | '/salary'
     | '/sitemap.xml'
     | '/skills'
     | '/success-stories'
@@ -998,7 +987,6 @@ export interface FileRouteTypes {
     | '/resources'
     | '/resume'
     | '/roadmap'
-    | '/salary'
     | '/scholarships'
     | '/sitemap.xml'
     | '/skills'
@@ -1088,7 +1076,6 @@ export interface RootRouteChildren {
   ResourcesRoute: typeof ResourcesRoute
   ResumeRoute: typeof ResumeRoute
   RoadmapRoute: typeof RoadmapRouteWithChildren
-  SalaryRoute: typeof SalaryRoute
   ScholarshipsRoute: typeof ScholarshipsRouteWithChildren
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SkillsRoute: typeof SkillsRoute
@@ -1142,13 +1129,6 @@ declare module '@tanstack/react-router' {
       path: '/scholarships'
       fullPath: '/scholarships'
       preLoaderRoute: typeof ScholarshipsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/salary': {
-      id: '/salary'
-      path: '/salary'
-      fullPath: '/salary'
-      preLoaderRoute: typeof SalaryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/roadmap': {
@@ -1902,7 +1882,6 @@ const rootRouteChildren: RootRouteChildren = {
   ResourcesRoute: ResourcesRoute,
   ResumeRoute: ResumeRoute,
   RoadmapRoute: RoadmapRouteWithChildren,
-  SalaryRoute: SalaryRoute,
   ScholarshipsRoute: ScholarshipsRouteWithChildren,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SkillsRoute: SkillsRoute,

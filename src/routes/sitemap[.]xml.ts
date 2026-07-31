@@ -20,7 +20,6 @@ const paths = [
   "/mentors",
   "/personality",
   "/resources",
-  "/salary",
   "/scholarships",
   "/internships",
   "/success-stories",
