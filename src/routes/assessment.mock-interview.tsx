@@ -880,7 +880,7 @@ td,th{border:1px solid #e2e8f0;padding:9px 12px;font-size:13px;text-align:left}t
           </div>
 
           {/* Sidebar */}
-          <aside className="rounded-[18px] border border-white/10 bg-neutral-900 text-white p-5 space-y-5 lg:sticky lg:top-24">
+          <aside data-theme-surface="dark" className="rounded-lg border border-white/10 bg-neutral-900 text-white p-5 space-y-5 lg:sticky lg:top-24">
             <div>
               <div className="text-[11px] uppercase tracking-widest text-white/40">Session</div>
               <div className="mt-1 text-sm">
