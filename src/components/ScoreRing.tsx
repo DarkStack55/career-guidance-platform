@@ -36,7 +36,7 @@ export function ScoreRing({
     <div className="inline-flex flex-col items-center gap-2">
       <div className="relative" style={{ width: size, height: size }}>
         <svg width={size} height={size} className="-rotate-90">
-          <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} fill="none" />
+          <circle cx={size / 2} cy={size / 2} r={r} stroke="var(--border)" strokeWidth={stroke} fill="none" />
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -51,11 +51,11 @@ export function ScoreRing({
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl font-semibold text-white">{display}</span>
-          <span className="text-[10px] uppercase tracking-widest text-white/50">/ 100</span>
+          <span className="text-3xl font-semibold text-foreground">{display}</span>
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground">/ 100</span>
         </div>
       </div>
-      {label && <div className="text-xs text-white/60 uppercase tracking-widest">{label}</div>}
+      {label && <div className="text-xs text-muted-foreground uppercase tracking-widest">{label}</div>}
     </div>
   );
 }

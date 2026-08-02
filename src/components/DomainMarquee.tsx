@@ -45,7 +45,7 @@ function Card({ label, img }: { label: string; img: string }) {
 export function DomainMarquee() {
   const row = [...DOMAINS, ...DOMAINS];
   return (
-    <section className="relative py-24 bg-[#05060d] overflow-hidden border-y border-white/5">
+    <section data-theme-surface="dark" className="relative py-24 bg-[#05060d] overflow-hidden border-y border-white/5">
       <div className="max-w-6xl mx-auto px-6 mb-12">
         <div className="text-xs font-mono uppercase tracking-widest text-cyan-300 mb-3">Coverage · 45+ industries</div>
         <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-white max-w-3xl">

@@ -46,21 +46,21 @@ export function QuizRunner({
   };
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 md:p-8">
-      <div className="flex items-center justify-between text-xs text-white/50 mb-3">
+    <div className="rounded-lg border border-border bg-card/70 backdrop-blur-xl p-6 md:p-8">
+      <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
         <span>
           Question {idx + 1} of {questions.length}
         </span>
         <span>{pct}%</span>
       </div>
-      <div className="h-1.5 rounded-full bg-white/5 overflow-hidden mb-6">
+      <div className="h-1.5 rounded-full bg-secondary overflow-hidden mb-6">
         <div
           className="h-full bg-gradient-to-r from-cyan-400 to-fuchsia-500 transition-all"
           style={{ width: `${pct}%` }}
         />
       </div>
 
-      <h3 className="text-lg md:text-xl font-medium text-white mb-5">{q.prompt}</h3>
+      <h3 className="text-lg md:text-xl font-medium text-foreground mb-5">{q.prompt}</h3>
       <div className="grid gap-2">
         {q.options.map((o, oi) => {
           const selected = picked[q.id] === oi;
@@ -71,8 +71,8 @@ export function QuizRunner({
               onClick={() => pick(oi, o.value)}
               className={`text-left rounded-xl border px-4 py-3 text-sm transition-colors ${
                 selected
-                  ? "border-cyan-400/60 bg-cyan-400/10 text-white"
-                  : "border-white/10 bg-white/[0.02] text-white/80 hover:bg-white/[0.05]"
+                  ? "border-primary/60 bg-primary/10 text-foreground"
+                  : "border-border bg-background text-foreground/80 hover:bg-secondary"
               }`}
             >
               {o.label}
@@ -86,7 +86,7 @@ export function QuizRunner({
           type="button"
           disabled={idx === 0}
           onClick={back}
-          className="inline-flex items-center gap-1 text-sm text-white/60 hover:text-white disabled:opacity-30"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground disabled:opacity-30"
         >
           <ChevronLeft className="size-4" /> Back
         </button>
@@ -95,7 +95,7 @@ export function QuizRunner({
             type="button"
             disabled={answers[q.id] == null}
             onClick={next}
-            className="inline-flex items-center gap-1 rounded-lg bg-white text-neutral-900 px-4 py-2 text-sm font-medium disabled:opacity-40"
+            className="inline-flex items-center gap-1 rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-medium disabled:opacity-40"
           >
             Next <ChevronRight className="size-4" />
           </button>

@@ -66,7 +66,7 @@ function Home() {
       <DomainMarquee />
 
       {/* Stats strip */}
-      <ScrollReveal className="bg-[#0a0a0a] border-b border-white/5">
+      <ScrollReveal className="bg-[#0a0a0a] border-b border-white/5" themeSurface="dark">
         <div className="max-w-6xl mx-auto px-6 py-14 grid grid-cols-2 md:grid-cols-4 gap-px bg-white/5 rounded-2xl border border-white/10 overflow-hidden">
           {stats.map((s) => (
             <div key={s.label} className="bg-[#0a0b16] p-6">

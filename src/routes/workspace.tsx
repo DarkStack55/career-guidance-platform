@@ -74,7 +74,7 @@ function Workspace() {
   }
 
   return (
-    <div className="aether-ws fixed inset-0 z-[60] flex bg-[#09090B] text-[#FAFAFA] overflow-hidden">
+    <div data-theme-surface="dark" className="aether-ws fixed inset-0 z-[60] flex bg-[#09090B] text-[#FAFAFA] overflow-hidden">
       <style>{wsStyles}</style>
 
       {/* Sidebar */}

@@ -286,8 +286,8 @@ function Page() {
       {/* ---------- Setup ---------- */}
       {!locked && !questions && !result && (
         <div className="space-y-4">
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-            <label className="block text-sm text-white/70 mb-3">1. Target role</label>
+          <div className="rounded-lg border border-border bg-card p-6">
+            <label className="block text-sm text-muted-foreground mb-3">1. Target role</label>
             <div className="flex flex-wrap gap-2 mb-4">
               {ROLES.map((r) => (
                 <button
@@ -297,7 +297,7 @@ function Page() {
                   className={`rounded-full px-3 py-1.5 text-xs border transition-colors ${
                     role === r
                       ? "bg-cyan-400/15 border-cyan-400/50 text-cyan-200"
-                      : "bg-white/5 border-white/10 text-white/70 hover:text-white"
+                      : "bg-secondary border-border text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {r}
@@ -308,12 +308,12 @@ function Page() {
               value={role}
               onChange={(e) => setRole(e.target.value)}
               placeholder="…or type any role, e.g. Robotics Intern"
-              className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-2.5 text-white placeholder:text-white/40 outline-none focus:border-cyan-400/60"
+              className="w-full rounded-lg bg-background border border-border px-4 py-2.5 text-foreground placeholder:text-muted-foreground outline-none focus:border-primary"
             />
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-            <label className="block text-sm text-white/70 mb-3">2. Difficulty</label>
+          <div className="rounded-lg border border-border bg-card p-6">
+            <label className="block text-sm text-muted-foreground mb-3">2. Difficulty</label>
             <div className="grid gap-3 sm:grid-cols-3">
               {DIFFICULTIES.map((d) => (
                 <button
@@ -323,11 +323,11 @@ function Page() {
                   className={`text-left rounded-xl border p-4 transition-colors ${
                     difficulty === d.key
                       ? "border-cyan-400/50 bg-cyan-400/10"
-                      : "border-white/10 bg-white/[0.02] hover:bg-white/[0.05]"
+                      : "border-border bg-background hover:bg-secondary"
                   }`}
                 >
-                  <div className="text-sm font-medium text-white">{d.label}</div>
-                  <div className="text-xs text-white/55 mt-1">{d.hint}</div>
+                  <div className="text-sm font-medium text-foreground">{d.label}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{d.hint}</div>
                 </button>
               ))}
             </div>
@@ -349,10 +349,10 @@ function Page() {
         <div className="space-y-5">
           <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr]">
             <CameraStage active onMetrics={setVision} />
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 space-y-4">
+            <div className="rounded-lg border border-border bg-card p-5 space-y-4">
               <div className="flex items-center justify-between">
-                <div className="text-xs uppercase tracking-widest text-white/45">Live delivery</div>
-                <div className="inline-flex items-center gap-1.5 text-xs text-white/60">
+                <div className="text-xs uppercase tracking-widest text-muted-foreground">Live delivery</div>
+                <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                   <Timer className="size-3.5" />
                   {String(Math.floor(elapsed / 60)).padStart(2, "0")}:{String(elapsed % 60).padStart(2, "0")}
                 </div>
@@ -374,7 +374,7 @@ function Page() {
                   ))}
                 </div>
               )}
-              <div className="text-[11px] text-white/40 leading-relaxed">
+              <div className="text-[11px] text-muted-foreground leading-relaxed">
                 Metrics are estimated in your browser from the camera preview and your transcript. Nothing is uploaded — only the
                 summary numbers are sent for coaching.
               </div>
@@ -382,9 +382,9 @@ function Page() {
           </div>
 
           {questions.map((q, i) => (
-            <div key={i} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <div key={i} className="rounded-lg border border-border bg-card p-5">
               <div className="flex items-center justify-between mb-2">
-                <div className="text-xs uppercase tracking-widest text-white/50">Question {i + 1}</div>
+                <div className="text-xs uppercase tracking-widest text-muted-foreground">Question {i + 1}</div>
                 <span className={`text-[10px] uppercase tracking-widest rounded-full px-2 py-0.5 border ${
                   q.type === "technical"
                     ? "text-fuchsia-200 border-fuchsia-400/30 bg-fuchsia-400/10"
@@ -393,13 +393,13 @@ function Page() {
                   {q.type}
                 </span>
               </div>
-              <div className="text-white mb-3">{q.text}</div>
+              <div className="text-foreground mb-3">{q.text}</div>
               <textarea
                 value={answers[i] ?? ""}
                 onChange={(e) => setAnswers((a) => ({ ...a, [i]: e.target.value }))}
                 rows={4}
                 placeholder="Answer with Situation → Task → Action → Result…"
-                className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-2.5 text-white placeholder:text-white/40 outline-none focus:border-cyan-400/60 resize-y"
+                className="w-full rounded-lg bg-background border border-border px-4 py-2.5 text-foreground placeholder:text-muted-foreground outline-none focus:border-primary resize-y"
               />
               <div className="mt-2 flex items-center justify-between gap-3 flex-wrap">
                 <button
@@ -408,7 +408,7 @@ function Page() {
                   className={`rounded-lg px-3 py-1.5 text-xs inline-flex items-center gap-1.5 border ${
                     listening === i
                       ? "bg-rose-500/15 border-rose-400/40 text-rose-200"
-                      : "bg-white/5 border-white/10 text-white/70 hover:text-white"
+                      : "bg-secondary border-border text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {listening === i ? <MicOff className="size-3.5" /> : <Mic className="size-3.5" />}
@@ -428,7 +428,7 @@ function Page() {
               {loading === "score" ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
               Score my interview
             </button>
-            <button onClick={reset} className="rounded-lg border border-white/15 text-white px-4 py-2 text-sm">
+            <button onClick={reset} className="rounded-lg border border-border text-foreground px-4 py-2 text-sm hover:bg-secondary">
               Cancel
             </button>
           </div>
@@ -438,20 +438,20 @@ function Page() {
       {/* ---------- Report ---------- */}
       {result && (
         <div className="space-y-6">
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 flex flex-col md:flex-row items-center gap-8 justify-around">
+          <div className="rounded-lg border border-border bg-card p-6 flex flex-col md:flex-row items-center gap-8 justify-around">
             <ScoreRing score={result.overall} label="Readiness" />
             <div className="text-center md:text-left">
-              <div className="text-xs uppercase tracking-widest text-white/50 mb-1">Verdict</div>
-              <div className="text-2xl font-semibold text-white">{result.verdict}</div>
-              <div className="mt-2 text-sm text-white/60">
+              <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Verdict</div>
+              <div className="text-2xl font-semibold text-foreground">{result.verdict}</div>
+              <div className="mt-2 text-sm text-muted-foreground">
                 {role} · {difficulty}-level · {Math.floor(elapsed / 60)}m {elapsed % 60}s
               </div>
             </div>
           </div>
 
           {result.star_overall && (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-              <div className="text-sm font-medium text-white mb-4">STAR method coverage</div>
+            <div className="rounded-lg border border-border bg-card p-6">
+              <div className="text-sm font-medium text-foreground mb-4">STAR method coverage</div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {(["situation", "task", "action", "result"] as const).map((k) => (
                   <Bar key={k} label={k} value={result.star_overall?.[k] ?? 0} />
@@ -473,16 +473,16 @@ function Page() {
           {result.delivery_feedback && (
             <div className="rounded-2xl border border-cyan-400/20 bg-cyan-400/5 p-5">
               <div className="text-[10px] uppercase tracking-widest text-cyan-300 mb-1">Delivery coaching</div>
-              <p className="text-sm text-white/85 leading-relaxed">{result.delivery_feedback}</p>
+              <p className="text-sm text-foreground/85 leading-relaxed">{result.delivery_feedback}</p>
             </div>
           )}
 
           <div className="space-y-3">
             {result.per_question.map((p, i) => (
-              <div key={i} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+              <div key={i} className="rounded-lg border border-border bg-card p-5">
                 <div className="flex items-center justify-between mb-1 gap-3">
-                  <div className="text-sm text-white/70">Q{i + 1}. {p.question}</div>
-                  <div className="text-xs text-white/60 shrink-0">{p.answer_score}/100</div>
+                  <div className="text-sm text-muted-foreground">Q{i + 1}. {p.question}</div>
+                  <div className="text-xs text-muted-foreground shrink-0">{p.answer_score}/100</div>
                 </div>
                 {p.star && (
                   <div className="grid grid-cols-4 gap-3 my-3">
@@ -491,19 +491,19 @@ function Page() {
                     ))}
                   </div>
                 )}
-                <p className="text-sm text-white/80 mt-2 leading-relaxed">{p.feedback}</p>
+                <p className="text-sm text-foreground/80 mt-2 leading-relaxed">{p.feedback}</p>
                 <div className="mt-3 rounded-lg border border-cyan-400/20 bg-cyan-400/5 p-3">
                   <div className="text-[10px] uppercase tracking-widest text-cyan-300 mb-1">Stronger STAR answer</div>
-                  <p className="text-sm text-white/90 leading-relaxed">{p.exemplar}</p>
+                  <p className="text-sm text-foreground/90 leading-relaxed">{p.exemplar}</p>
                 </div>
               </div>
             ))}
           </div>
 
           {result.top_tips?.length > 0 && (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-              <div className="text-sm font-medium text-white mb-3">Top tips</div>
-              <ul className="list-disc list-inside space-y-1 text-sm text-white/80">
+            <div className="rounded-lg border border-border bg-card p-6">
+              <div className="text-sm font-medium text-foreground mb-3">Top tips</div>
+              <ul className="list-disc list-inside space-y-1 text-sm text-foreground/80">
                 {result.top_tips.map((t, i) => <li key={i}>{t}</li>)}
               </ul>
             </div>
@@ -512,7 +512,7 @@ function Page() {
           <button
             onClick={reset}
             disabled={attempts?.locked}
-            className="rounded-lg border border-white/15 text-white px-4 py-2 text-sm disabled:opacity-40"
+            className="rounded-lg border border-border text-foreground px-4 py-2 text-sm hover:bg-secondary disabled:opacity-40"
           >
             {attempts?.locked ? "No attempts left in this window" : "Run another interview"}
           </button>
@@ -525,7 +525,7 @@ function Page() {
 function AttemptBanner({ attempts }: { attempts: Attempts | null }) {
   if (!attempts) return null;
   return (
-    <div className="mb-5 flex items-center gap-2 text-xs text-white/60">
+    <div className="mb-5 flex items-center gap-2 text-xs text-muted-foreground">
       <Lock className="size-3.5" />
       Attempts used {attempts.used}/{attempts.max} in the last 24 hours
       {attempts.remaining > 0 ? ` · ${attempts.remaining} left` : ""}
@@ -549,10 +549,10 @@ function Stat({
   const color = tone === "good" ? "text-cyan-300" : tone === "warn" ? "text-amber-300" : "text-rose-300";
   return (
     <div className="flex items-center gap-3">
-      <div className={`rounded-lg border border-white/10 bg-white/5 p-2 ${color}`}>{icon}</div>
+      <div className={`rounded-lg border border-border bg-secondary p-2 ${color}`}>{icon}</div>
       <div>
-        <div className="text-[10px] uppercase tracking-widest text-white/45">{label}</div>
-        <div className="text-lg font-semibold text-white leading-tight">{value}</div>
+        <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
+        <div className="text-lg font-semibold text-foreground leading-tight">{value}</div>
         <div className={`text-[11px] ${color}`}>{note}</div>
       </div>
     </div>
@@ -561,10 +561,10 @@ function Stat({
 
 function MiniStat({ label, value, note }: { label: string; value: string; note: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-      <div className="text-[10px] uppercase tracking-widest text-white/45">{label}</div>
-      <div className="text-xl font-semibold text-white mt-1">{value}</div>
-      <div className="text-xs text-white/55 mt-1">{note}</div>
+    <div className="rounded-lg border border-border bg-card p-5">
+      <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
+      <div className="text-xl font-semibold text-foreground mt-1">{value}</div>
+      <div className="text-xs text-muted-foreground mt-1">{note}</div>
     </div>
   );
 }
@@ -574,10 +574,10 @@ function Bar({ label, value, compact }: { label: string; value: number; compact?
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <span className={`uppercase tracking-widest text-white/50 ${compact ? "text-[9px]" : "text-[10px]"}`}>{label}</span>
-        <span className={`text-white/70 ${compact ? "text-[10px]" : "text-xs"}`}>{v}</span>
+        <span className={`uppercase tracking-widest text-muted-foreground ${compact ? "text-[9px]" : "text-[10px]"}`}>{label}</span>
+        <span className={`text-foreground/70 ${compact ? "text-[10px]" : "text-xs"}`}>{v}</span>
       </div>
-      <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+      <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
         <div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-fuchsia-500" style={{ width: `${v}%` }} />
       </div>
     </div>
@@ -587,6 +587,6 @@ function Bar({ label, value, compact }: { label: string; value: number; compact?
 function FillerPreview({ text }: { text: string }) {
   const parts = useMemo(() => highlightFillers(text), [text]);
   const count = parts.filter((p) => p.filler).length;
-  if (count === 0) return <span className="text-[11px] text-white/35">No filler words detected</span>;
+  if (count === 0) return <span className="text-[11px] text-muted-foreground">No filler words detected</span>;
   return <span className="text-[11px] text-amber-300">{count} filler word{count > 1 ? "s" : ""} in this answer</span>;
 }

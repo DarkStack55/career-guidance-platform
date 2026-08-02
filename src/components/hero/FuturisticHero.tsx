@@ -141,6 +141,7 @@ export function FuturisticHero() {
 
   return (
     <section
+      data-theme-surface="dark"
       className="relative isolate overflow-hidden bg-[#0a0a0a]"
       onMouseMove={(e) => {
         const r = e.currentTarget.getBoundingClientRect();

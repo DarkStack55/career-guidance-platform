@@ -183,14 +183,14 @@ function DesktopMegaMenu({ path }: { path: string }) {
               onMouseEnter={cancelClose}
               onMouseLeave={scheduleClose}
             >
-              <div className="bg-black/80 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl p-2">
+              <div className="bg-popover/95 backdrop-blur-xl border border-border rounded-lg shadow-2xl p-2 text-popover-foreground">
                 {item.children.map((c) => (
                   <Link
                     key={c.to + c.label}
                     to={c.to}
                     role="menuitem"
                     onClick={() => setOpenIndex(null)}
-                    className="block text-sm text-gray-300 hover:text-cyan-400 hover:bg-white/5 px-4 py-2 rounded-md transition-colors"
+                    className="block text-sm text-muted-foreground hover:text-primary hover:bg-accent/10 px-4 py-2 rounded-md transition-colors"
                   >
                     {c.label}
                   </Link>
@@ -239,13 +239,13 @@ function MobileAccordion({ onNavigate }: { onNavigate: () => void }) {
               }`}
             >
               <div className="overflow-hidden">
-                <div className="pl-4 pb-2 space-y-0.5 border-l border-white/10 ml-3">
+                <div className="pl-4 pb-2 space-y-0.5 border-l border-border ml-3">
                   {item.children.map((c) => (
                     <Link
                       key={c.to + c.label}
                       to={c.to}
                       onClick={onNavigate}
-                      className="block text-sm text-gray-300 hover:text-cyan-400 hover:bg-white/5 px-4 py-2 rounded-md transition-colors"
+                      className="block text-sm text-muted-foreground hover:text-primary hover:bg-accent/10 px-4 py-2 rounded-md transition-colors"
                     >
                       {c.label}
                     </Link>
@@ -274,14 +274,14 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/[0.02] backdrop-blur-3xl border-b border-white/10 shadow-[0_8px_32px_0_rgba(255,255,255,0.05)] gpu">
+    <header className="sticky top-0 z-50 w-full bg-background/85 backdrop-blur-3xl border-b border-border shadow-sm gpu">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
         <Link to="/" className="flex items-center gap-2.5 flex-shrink-0 group">
           <div className="relative size-9 rounded-xl bg-gradient-to-br from-cyan-500/30 to-purple-600/40 border border-white/15 backdrop-blur-md flex items-center justify-center shadow-[0_0_20px_-4px_rgba(139,92,246,0.6)]">
             <Compass className="size-4 text-cyan-300" strokeWidth={2.4} />
             <Sparkles className="absolute -top-1 -right-1 size-3 text-fuchsia-300 drop-shadow-[0_0_6px_rgba(236,72,153,0.9)]" strokeWidth={2.5} />
           </div>
-          <span className="text-[15px] font-semibold tracking-tight text-white">
+          <span className="text-[15px] font-semibold tracking-tight text-foreground">
             CareerPilot<span className="text-gradient-ai font-bold ml-1">AI</span>
           </span>
         </Link>
@@ -319,15 +319,15 @@ export function Navbar() {
       </div>
 
       {open && (
-        <div className="lg:hidden border-t border-white/10 bg-black/80 backdrop-blur-xl px-4 py-4 space-y-2 max-h-[calc(100svh-4rem)] overflow-y-auto">
+        <div className="lg:hidden border-t border-border bg-popover/95 text-popover-foreground backdrop-blur-xl px-4 py-4 space-y-2 max-h-[calc(100svh-4rem)] overflow-y-auto">
           <MobileAccordion onNavigate={() => setOpen(false)} />
-          <div className="pt-3 border-t border-white/10 flex gap-3">
+          <div className="pt-3 border-t border-border flex gap-3">
             {user ? (
               <button onClick={() => { setOpen(false); handleSignOut(); }} className="text-sm font-medium">Sign out</button>
             ) : (
               <>
                 <Link to="/login" search={{ form: "1" }} onClick={() => { setOpen(false); showPageLoader(); }} className="text-sm font-medium">Sign in</Link>
-                <Link to="/assessment" onClick={() => setOpen(false)} className="ml-auto px-4 py-2 bg-foreground text-neutral-900 rounded-lg text-sm font-medium">Get started</Link>
+                <Link to="/assessment" onClick={() => setOpen(false)} className="ml-auto px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium">Get started</Link>
               </>
             )}
           </div>
