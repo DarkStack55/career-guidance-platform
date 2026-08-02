@@ -126,7 +126,7 @@ function ResumeGraderPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -top-40 -left-40 w-[520px] h-[520px] rounded-full bg-cyan-500/10 blur-3xl" />
@@ -134,17 +134,17 @@ function ResumeGraderPage() {
         </div>
 
         <div className="relative max-w-6xl mx-auto px-6 pt-14 pb-8">
-          <Link to="/assessment" className="inline-flex items-center gap-2 text-xs text-white/60 hover:text-white mb-6">
+          <Link to="/assessment" className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground mb-6">
             <ArrowLeft className="size-3.5" /> Back to Assessment
           </Link>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-xl p-8 md:p-10">
-            <div className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-cyan-300/90 mb-3">
+          <div className="rounded-lg border border-border bg-card/70 backdrop-blur-xl p-8 md:p-10 shadow-elevated">
+            <div className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-primary mb-3">
               <Sparkles className="size-3.5" /> AI Resume Grader
             </div>
-            <h1 className="text-3xl md:text-5xl font-semibold tracking-tight bg-gradient-to-b from-white to-white/60 bg-clip-text text-transparent">
+            <h1 className="text-3xl md:text-5xl font-semibold tracking-tight text-foreground">
               Score, tune, and land the interview.
             </h1>
-            <p className="mt-4 max-w-2xl text-white/70 leading-relaxed">
+            <p className="mt-4 max-w-2xl text-muted-foreground leading-relaxed">
               Drop your resume — Zoiee grades it like a senior recruiter: overall impression, ATS parseability,
               per-section breakdown, and concrete rewrite instructions.
             </p>
@@ -154,13 +154,13 @@ function ResumeGraderPage() {
 
       <div className="max-w-6xl mx-auto px-6 pb-24 space-y-8">
         {loading ? (
-          <div className="text-white/60 text-sm">Loading…</div>
+          <div className="text-muted-foreground text-sm">Loading…</div>
         ) : !user ? (
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center">
-            <p className="text-white/70 mb-4">Sign in to save analyses and view your history.</p>
+          <div className="rounded-lg border border-border bg-card p-8 text-center">
+            <p className="text-muted-foreground mb-4">Sign in to save analyses and view your history.</p>
             <button
               onClick={() => navigate({ to: "/login", search: { next: "/assessment/resume" } as never })}
-              className="rounded-lg bg-white text-neutral-900 px-5 py-2 text-sm font-semibold"
+              className="rounded-lg bg-primary text-primary-foreground px-5 py-2 text-sm font-semibold"
             >
               Sign in to continue
             </button>
@@ -171,7 +171,7 @@ function ResumeGraderPage() {
             <div
               {...getRootProps()}
               className={`rounded-3xl border-2 border-dashed p-12 text-center transition-colors cursor-pointer ${
-                isDragActive ? "border-cyan-400 bg-cyan-400/5" : "border-white/15 bg-white/[0.02] hover:bg-white/[0.04]"
+                isDragActive ? "border-primary bg-primary/5" : "border-border bg-card hover:bg-secondary"
               } ${busy !== "idle" ? "pointer-events-none opacity-70" : ""}`}
             >
               <input {...getInputProps()} />
@@ -187,7 +187,7 @@ function ResumeGraderPage() {
                   ? "Drop it here"
                   : "Drag & drop your resume, or click to browse"}
               </div>
-              <div className="mt-2 text-xs text-white/50">PDF, DOCX, or TXT · up to 8 MB · stored privately</div>
+              <div className="mt-2 text-xs text-muted-foreground">PDF, DOCX, or TXT · up to 8 MB · stored privately</div>
             </div>
 
             {/* Result */}

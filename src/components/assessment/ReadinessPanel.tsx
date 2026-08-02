@@ -5,7 +5,7 @@ export type SubScore = { label: string; value: number };
 
 export function ReadinessPanel({ overall, subs }: { overall: number; subs: SubScore[] }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 md:p-8 backdrop-blur-xl">
+    <div className="rounded-lg border border-border bg-card/70 p-6 md:p-8 backdrop-blur-xl">
       <div className="flex flex-col items-center gap-8 md:flex-row md:items-center">
         <div className="shrink-0">
           <ScoreRing score={overall} label="Overall Readiness" size={160} />
@@ -14,10 +14,10 @@ export function ReadinessPanel({ overall, subs }: { overall: number; subs: SubSc
           {subs.map((s, i) => (
             <div key={s.label}>
               <div className="mb-1.5 flex items-baseline justify-between text-xs">
-                <span className="uppercase tracking-[0.14em] text-white/50">{s.label}</span>
-                <span className="font-mono text-white/80">{Math.round(s.value)}</span>
+                <span className="uppercase tracking-[0.14em] text-muted-foreground">{s.label}</span>
+                <span className="font-mono text-foreground/80">{Math.round(s.value)}</span>
               </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-white/5">
+              <div className="h-1.5 overflow-hidden rounded-full bg-secondary">
                 <motion.div
                   className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-fuchsia-500"
                   initial={{ width: 0 }}
