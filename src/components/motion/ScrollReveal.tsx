@@ -9,10 +9,12 @@ export function ScrollReveal({
   children,
   className,
   as: Tag = "section",
+  themeSurface,
 }: {
   children: ReactNode;
   className?: string;
   as?: "section" | "div";
+  themeSurface?: "dark";
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
@@ -32,6 +34,7 @@ export function ScrollReveal({
     <MotionTag
       ref={ref as never}
       className={className}
+      data-theme-surface={themeSurface}
       style={reduce ? undefined : { scale, opacity, filter, willChange: "transform, filter, opacity" }}
     >
       {children}

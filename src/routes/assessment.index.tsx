@@ -77,7 +77,7 @@ function AssessmentHub() {
   const overall = Math.round(subs.reduce((a, s) => a + s.value, 0) / subs.length);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -top-40 -left-40 h-[520px] w-[520px] rounded-full bg-cyan-500/10 blur-3xl" />
@@ -90,13 +90,13 @@ function AssessmentHub() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="mb-3 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-cyan-300/90">
+            <div className="mb-3 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-primary">
               <Sparkles className="size-3.5" /> Assessment Matrix
             </div>
-            <h1 className="max-w-3xl bg-gradient-to-b from-white to-white/60 bg-clip-text text-3xl font-semibold tracking-tight text-transparent md:text-5xl">
+            <h1 className="max-w-3xl text-foreground text-3xl font-semibold tracking-tight md:text-5xl">
               AI-Powered Career Intelligence Engine
             </h1>
-            <p className="mt-4 max-w-2xl leading-relaxed text-white/70">
+            <p className="mt-4 max-w-2xl leading-relaxed text-muted-foreground">
               Four next-generation modules measure how you decide, build, think and fit — then fuse
               the signals into a single readiness score.
               {!user && " Sign in to replace the demo profile with your own results."}
@@ -163,22 +163,22 @@ function AssessmentHub() {
         <div className="grid gap-4 sm:grid-cols-2">
           <Link
             to="/assessment/resume"
-            className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-5 py-4 transition-colors hover:border-white/25 hover:bg-white/[0.06]"
+            className="group flex items-center gap-3 rounded-lg border border-border bg-card px-5 py-4 transition-colors hover:border-primary/30 hover:bg-accent/10"
           >
-            <FileText className="size-4 text-cyan-300" />
+            <FileText className="size-4 text-primary" />
             <div>
-              <div className="text-sm font-medium text-white">AI Resume Grader</div>
-              <div className="text-xs text-white/50">Upload a resume for an instant scored breakdown.</div>
+              <div className="text-sm font-medium text-foreground">AI Resume Grader</div>
+              <div className="text-xs text-muted-foreground">Upload a resume for an instant scored breakdown.</div>
             </div>
           </Link>
           <Link
             to="/assessment/mock-interview"
-            className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-5 py-4 transition-colors hover:border-white/25 hover:bg-white/[0.06]"
+            className="group flex items-center gap-3 rounded-lg border border-border bg-card px-5 py-4 transition-colors hover:border-primary/30 hover:bg-accent/10"
           >
             <Mic className="size-4 text-fuchsia-300" />
             <div>
-              <div className="text-sm font-medium text-white">Mock Interview Studio</div>
-              <div className="text-xs text-white/50">Live voice + video interview simulation.</div>
+              <div className="text-sm font-medium text-foreground">Mock Interview Studio</div>
+              <div className="text-xs text-muted-foreground">Live voice + video interview simulation.</div>
             </div>
           </Link>
         </div>
