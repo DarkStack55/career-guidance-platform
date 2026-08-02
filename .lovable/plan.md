@@ -1,26 +1,23 @@
-## Assessment Hub at `/assessment`
+## Light-mode visibility repair
 
-Replace the 8-step questionnaire on `src/routes/assessment.index.tsx` with an interactive assessment matrix dashboard. Global navbar untouched (the `/assessment` route is a plain `<Outlet />` layout).
+### 1. Correct the global theme foundation
+- Replace the current partial “legibility rescue” rules—which only cover content inside `<main>`—with semantic light-mode styling that also covers the navbar, footer, menus, floating chat controls, dialogs, and overlays.
+- Strengthen foreground, muted text, border, input, card, popover, hover, focus, disabled, and selected-state tokens for reliable contrast.
+- Preserve the intentionally dark authentication experience while keeping every control readable.
 
-### Header
-- Hero: eyebrow "Assessment Matrix", H1 "AI-Powered Career Intelligence Engine", supporting line.
-- Animated radial "Overall Readiness Score" ring (reusing `ScoreRing`) with four animated sub-score bars: Workplace DNA, Technical Mastery, Cognitive Speed, Market Fit.
-- Scores come from the user's saved results when signed in (`getLatestByKind`), falling back to a demo 68/100 profile for guests — no new backend work.
+### 2. Fix shared components used across the site
+- Refactor the navigation bar and desktop/mobile menus to use theme-aware surfaces and text instead of hardcoded white text and black panels.
+- Correct footer links, borders, labels, and secondary text.
+- Convert `SubPageShell` from its forced black/white presentation to semantic background, foreground, card, border, and accent styles so all subcategory pages support light mode.
+- Repair Zoiee/chat launcher and chat surfaces so buttons, icons, messages, inputs, and borders remain visible over light pages.
+- Review reusable heroes, cards, forms, buttons, badges, tabs, modals, and assessment shells for the same issue.
 
-### 2x2 card grid
-Each card: glass panel, animated visual preview, badge, subtitle, status pill (top-right), CTA button, hover state (lift, glare, border glow).
+### 3. Repair route-specific contrast defects
+- Audit all content route families: Home, Assessment, Dashboard, Roadmap, Mentors, Scholarships, Internships, Blog, jobs, profile, resources, and their subcategory pages.
+- Replace hardcoded dark-theme classes where they create white-on-white text, invisible translucent cards, faint borders, unreadable placeholders, or incorrect selected/hover states.
+- Keep intentional image-overlay sections dark only where their own background guarantees contrast.
 
-1. **Immersive Scenario Simulator** — swipeable stacked scenario cards motif · "Workplace DNA Matrix" · Launch Simulator → `/assessment/personality`
-2. **Live Application Sandbox** — split terminal / CAD-grid preview · "Real-Time AI Grading" · Enter Sandbox → `/assessment/technical`
-3. **Cognitive Radar & Pressure Test** — mini animated SVG radar (spatial / numerical / deductive) · "Gamified Speed Test" · Start Pressure Test → `/assessment/aptitude`
-4. **Career Constellation Map** — SVG node-graph skill tree · "Predictive Skill Tree" · Explore Constellation → `/assessment/career-fit`
-
-Status pill = Complete when a saved result exists for that kind, otherwise Unlocked (In Progress shown for partially-scored kinds).
-
-Below the grid: a slim secondary row linking the existing Resume Grader and Mock Interview Studio so those stay reachable.
-
-### Technical notes
-- Edit only `src/routes/assessment.index.tsx`; add small presentational components under `src/components/assessment/` (`ReadinessPanel`, `AssessmentCard`, and the four SVG previews).
-- Framer Motion for entrance, hover and radar/constellation animation; existing dark-glass tokens, no hardcoded color utilities beyond the established `white/xx` glass pattern used across assessment pages.
-- The old questionnaire is removed; no sub-module logic is built.
-- Route-specific `head()` metadata updated for the hub.
+### 4. Validate the complete site
+- Check every generated route in light mode at desktop and mobile widths.
+- Verify normal, hover, focus, active, selected, disabled, loading, empty, modal, dropdown, and form-error states.
+- Confirm there is no invisible text/button content, no low-contrast white-on-white controls, and no regression to dark mode or auth screens.
