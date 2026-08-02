@@ -281,10 +281,8 @@ export function ChatWidget() {
         whileTap={{ scale: 0.92 }}
         animate={{ scale: [1, 1.04, 1] }}
         transition={{ scale: { duration: 2.6, repeat: Infinity, ease: "easeInOut" } }}
-        className="fixed bottom-6 right-6 z-[9999] size-14 rounded-full flex items-center justify-center overflow-hidden gpu"
+        className="fixed bottom-6 right-6 z-[9999] size-14 rounded-full flex items-center justify-center overflow-hidden gpu bg-card border border-border dark:bg-white/[0.08] dark:border-white/20"
         style={{
-          background: "rgba(255,255,255,0.08)",
-          border: "1px solid rgba(255,255,255,0.2)",
           backdropFilter: "blur(24px) saturate(160%)",
           boxShadow: "0 8px 32px -4px rgba(16,185,129,0.45), 0 0 0 1px rgba(255,255,255,0.05) inset",
         }}
@@ -300,7 +298,7 @@ export function ChatWidget() {
             className="flex items-center justify-center"
           >
             {open ? (
-              <X className="size-6 text-white" />
+              <X className="size-6 text-foreground" />
             ) : (
               <img src={chatbotLogo} alt="Zoiee AI" width={512} height={512} loading="lazy" className="size-11 object-contain drop-shadow-[0_0_10px_rgba(16,185,129,0.6)]" />
             )}

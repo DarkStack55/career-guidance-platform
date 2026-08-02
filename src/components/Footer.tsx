@@ -4,7 +4,7 @@ import { MouseGlow } from "@/components/motion/MouseGlow";
 
 export function Footer() {
   return (
-    <footer className="relative border-t border-white/10 bg-white/[0.02] backdrop-blur-3xl shadow-[0_-8px_32px_0_rgba(255,255,255,0.04)] mt-24 overflow-hidden">
+    <footer className="relative border-t border-border bg-background/80 backdrop-blur-3xl shadow-sm mt-24 overflow-hidden">
       <MouseGlow size={520} color="color-mix(in oklab, var(--primary) 22%, transparent)" />
 
       <div className="max-w-7xl mx-auto px-6 py-14 grid md:grid-cols-5 gap-10">
@@ -30,7 +30,7 @@ export function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={s.label}
-                className="size-9 rounded-lg border border-white/10 bg-white/[0.02] backdrop-blur-xl text-white/60 hover:text-white hover:bg-white/[0.08] hover:border-white/30 flex items-center justify-center transition-colors"
+                className="size-9 rounded-lg border border-border bg-card backdrop-blur-xl text-muted-foreground hover:text-foreground hover:bg-accent/10 hover:border-primary/40 flex items-center justify-center transition-colors"
               >
                 <s.icon className="size-4" />
               </a>
@@ -57,8 +57,8 @@ export function Footer() {
           { to: "/login", label: "Sign in" },
         ]} />
       </div>
-      <div className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-6 py-5 flex flex-wrap items-center justify-between gap-3 text-xs text-white/50">
+      <div className="border-t border-border">
+        <div className="max-w-7xl mx-auto px-6 py-5 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
 
           <span>© {new Date().getFullYear()} CareerPilot, Inc. All rights reserved.</span>
           <div className="flex items-center gap-5">
