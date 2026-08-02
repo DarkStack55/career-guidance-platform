@@ -17,6 +17,7 @@ export function DomainCard({ image, title, roles, to = "/dashboard", slug }: Pro
       <Link
         to={href}
         data-spotlight
+        data-theme-surface="dark"
         className="group card-spotlight shimmer-sweep relative aspect-[4/5] rounded-2xl overflow-hidden border border-white/10 block bg-neutral-950 transition-shadow duration-500 hover:shadow-[0_20px_60px_-20px_rgba(139,92,246,0.55)]"
       >
         <img

@@ -198,6 +198,32 @@ main:not([data-auth-route]) {
   outline-color: var(--ring);
 }
 
+/* Image-led and cinematic sections intentionally retain a dark local canvas. */
+:root:not(.dark) [data-theme-surface="dark"] {
+  color: oklch(0.985 0 0);
+}
+:root:not(.dark) [data-theme-surface="dark"] :is(
+  .text-white, .text-white\/95, .text-white\/90, .text-white\/85, .text-white\/80
+) { color: oklch(0.985 0 0) !important; }
+:root:not(.dark) [data-theme-surface="dark"] :is(
+  .text-white\/70, .text-white\/60, .text-white\/50, .text-white\/40,
+  .text-gray-300, .text-gray-400
+) { color: oklch(0.82 0.01 265) !important; }
+:root:not(.dark) [data-theme-surface="dark"] :is(
+  .bg-white\/5, .bg-white\/10, .bg-white\/\[0\.03\], .bg-white\/\[0\.05\]
+) { background-color: oklch(1 0 0 / 6%) !important; }
+:root:not(.dark) [data-theme-surface="dark"] :is(
+  .border-white\/5, .border-white\/10, .border-white\/15, .border-white\/20
+) { border-color: oklch(1 0 0 / 14%) !important; }
+:root:not(.dark) [data-theme-surface="dark"] :is(input, textarea, select) {
+  color: oklch(0.985 0 0);
+  background-color: oklch(1 0 0 / 6%);
+  border-color: oklch(1 0 0 / 14%);
+}
+:root:not(.dark) [data-theme-surface="dark"] ::placeholder {
+  color: oklch(0.72 0.01 265);
+}
+
 
 
 @keyframes float-a { 0%,100% { transform: translateY(-5px); } 50% { transform: translateY(5px); } }
