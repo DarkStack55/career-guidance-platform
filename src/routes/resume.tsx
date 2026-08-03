@@ -52,7 +52,7 @@ function ResumePage() {
       {scanning && (
         <div className="mt-8 glass rounded-2xl p-6 animate-fade">
           <div className="font-mono text-xs text-primary mb-3">SCANNING…</div>
-          <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+          <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
             <div className="h-full bg-gradient-to-r from-primary to-accent animate-pulse w-2/3" />
           </div>
           <p className="text-sm text-muted-foreground mt-3">Extracting skills, roles, and impact statements.</p>

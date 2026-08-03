@@ -133,7 +133,7 @@ function ApplyForm({ job, email }: { job: typeof jobs[number]; email: string }) 
         </div>
 
         {isLoading ? (
-          <div className="h-64 rounded-xl bg-white/5 animate-pulse" />
+          <div className="h-64 rounded-xl bg-muted animate-pulse" />
         ) : (
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="Full name" value={full_name} onChange={setName} required />

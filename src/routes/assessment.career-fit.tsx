@@ -80,15 +80,18 @@ function Page() {
       nextPath="/assessment/career-fit"
     >
       {loading ? (
-        <div className="text-white/60 text-sm">Loading your results…</div>
+        <div className="flex items-center gap-2 text-muted-foreground text-sm">
+          <span className="size-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" />
+          Loading your results…
+        </div>
       ) : missing.length === 3 ? (
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center">
-          <Sparkles className="size-6 text-cyan-300 mx-auto mb-3" />
-          <p className="text-white/80 mb-4">Take at least one assessment to see your fit ranking.</p>
+        <div className="rounded-2xl border border-border bg-card p-8 text-center">
+          <Sparkles className="size-6 text-accent mx-auto mb-3" />
+          <p className="text-foreground mb-4">Take at least one assessment to see your fit ranking.</p>
           <div className="flex flex-wrap gap-3 justify-center">
-            <Link to="/assessment/personality" className="rounded-lg bg-white text-neutral-900 px-4 py-2 text-sm font-semibold">Personality</Link>
-            <Link to="/assessment/technical" className="rounded-lg border border-white/15 text-white px-4 py-2 text-sm font-semibold">Technical</Link>
-            <Link to="/assessment/aptitude" className="rounded-lg border border-white/15 text-white px-4 py-2 text-sm font-semibold">Aptitude</Link>
+            <Link to="/assessment/personality" className="rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-semibold">Personality</Link>
+            <Link to="/assessment/technical" className="rounded-lg border border-border text-foreground px-4 py-2 text-sm font-semibold">Technical</Link>
+            <Link to="/assessment/aptitude" className="rounded-lg border border-border text-foreground px-4 py-2 text-sm font-semibold">Aptitude</Link>
           </div>
         </div>
       ) : (
