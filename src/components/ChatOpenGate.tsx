@@ -28,11 +28,11 @@ export function ChatOpenGate() {
   return (
     <div
       aria-hidden
+      className="bg-background dark:bg-[#050505]"
       style={{
         position: "fixed",
         inset: 0,
         zIndex: 100001,
-        background: "#050505",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -61,16 +61,17 @@ export function ChatOpenGate() {
         {[0, 0.15, 0.3].map((d, i) => (
           <span
             key={i}
+            className="bg-foreground/40"
             style={{
               width: 8,
               height: 8,
               borderRadius: 9999,
-              background: "rgba(255,255,255,.4)",
               animation: `cpGatePulse 1.2s ease-in-out ${d}s infinite`,
             }}
           />
         ))}
       </div>
+
     </div>
   );
 }
