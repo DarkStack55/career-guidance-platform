@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 export function PageLoader({ label = "Connecting..." }: { label?: string }) {
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background text-foreground">
+    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background dark:bg-[#050505] text-foreground">
       <div className="relative flex items-center justify-center w-20 h-20">
         <motion.div
           className="w-4 h-4 bg-foreground rounded-full absolute -top-6"
