@@ -308,8 +308,8 @@ export function GuestConcierge() {
   return (
     <>
       {showLoadingGate && (
-        <div className="fixed inset-0 z-[9999] bg-[#050505] flex items-center justify-center">
-          <Loader2 className="size-6 animate-spin text-white/60" />
+        <div className="fixed inset-0 z-[9999] bg-background dark:bg-[#050505] flex items-center justify-center">
+          <Loader2 className="size-6 animate-spin text-muted-foreground" />
         </div>
       )}
       <AnimatePresence>
