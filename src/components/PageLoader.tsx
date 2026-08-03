@@ -19,7 +19,7 @@ export function PageLoader({ label = "Connecting..." }: { label?: string }) {
         />
       </div>
       <motion.p
-        className="mt-6 text-xs tracking-[0.3em] uppercase text-white/50 font-mono"
+        className="mt-6 text-xs tracking-[0.3em] uppercase text-muted-foreground font-mono"
         animate={{ opacity: [0.3, 1, 0.3] }}
         transition={{ duration: 1.5, repeat: Infinity }}
       >
