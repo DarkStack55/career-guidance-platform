@@ -206,7 +206,7 @@ function ApplicationsPanel() {
     <div className="glass p-5 rounded-2xl">
       <div className="font-mono text-[10px] text-primary tracking-widest mb-3 flex items-center gap-2"><Briefcase className="size-3" /> APPLICATIONS</div>
       {isLoading ? (
-        <div className="h-16 rounded-lg bg-white/5 animate-pulse" />
+        <div className="h-16 rounded-lg bg-muted animate-pulse" />
       ) : items.length === 0 ? (
         <div className="text-sm text-muted-foreground">
           No applications yet. <Link to="/jobs" className="text-primary hover:underline">Browse jobs →</Link>
@@ -267,7 +267,7 @@ function AlertsPanel() {
     <div className="glass p-5 rounded-2xl">
       <div className="font-mono text-[10px] text-accent tracking-widest mb-3 flex items-center gap-2"><Bell className="size-3" /> JOB_ALERTS</div>
       {isLoading ? (
-        <div className="h-24 rounded-lg bg-white/5 animate-pulse" />
+        <div className="h-24 rounded-lg bg-muted animate-pulse" />
       ) : (
         <div className="space-y-3">
           <div>
