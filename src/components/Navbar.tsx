@@ -120,6 +120,8 @@ const navigation: NavItem[] = [
 function DesktopMegaMenu({ path }: { path: string }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const triggerRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+  const itemRefs = useRef<(HTMLAnchorElement | null)[][]>([]);
 
   const scheduleClose = () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
@@ -135,34 +137,96 @@ function DesktopMegaMenu({ path }: { path: string }) {
     cancelClose();
     setOpenIndex(i);
   };
+  const closeAndFocusTrigger = (i: number) => {
+    cancelClose();
+    setOpenIndex(null);
+    triggerRefs.current[i]?.focus();
+  };
+  const focusItem = (menu: number, index: number) => {
+    const items = (itemRefs.current[menu] ?? []).filter(Boolean) as HTMLAnchorElement[];
+    if (!items.length) return;
+    const next = (index + items.length) % items.length;
+    items[next]?.focus();
+  };
 
   useEffect(() => {
+    if (openIndex === null) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpenIndex(null);
+      if (e.key === "Escape") closeAndFocusTrigger(openIndex);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [openIndex]);
+
+  const onTriggerKeyDown = (e: React.KeyboardEvent, i: number) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      open(i);
+      requestAnimationFrame(() => focusItem(i, 0));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      open(i);
+      requestAnimationFrame(() => focusItem(i, -1));
+    } else if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+      e.preventDefault();
+      const next = (i + (e.key === "ArrowRight" ? 1 : -1) + navigation.length) % navigation.length;
+      setOpenIndex(null);
+      triggerRefs.current[next]?.focus();
+    } else if (e.key === "Escape") {
+      setOpenIndex(null);
+    }
+  };
+
+  const onMenuKeyDown = (e: React.KeyboardEvent, menu: number, index: number) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      focusItem(menu, index + 1);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      focusItem(menu, index - 1);
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      focusItem(menu, 0);
+    } else if (e.key === "End") {
+      e.preventDefault();
+      focusItem(menu, -1);
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      closeAndFocusTrigger(menu);
+    } else if (e.key === "Tab") {
+      setOpenIndex(null);
+    }
+  };
 
   return (
     <nav className="hidden lg:flex items-center gap-1" onMouseLeave={scheduleClose}>
       {navigation.map((item, i) => {
         const isActive = path === item.to || (item.to !== "/" && path.startsWith(item.to));
         const isOpen = openIndex === i;
+        if (!itemRefs.current[i]) itemRefs.current[i] = [];
         return (
           <div
             key={item.label}
             className="relative"
             onMouseEnter={() => open(i)}
-            onFocus={() => open(i)}
+            onBlur={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                setOpenIndex((cur) => (cur === i ? null : cur));
+              }
+            }}
           >
             <Link
               to={item.to}
-              className={`inline-flex items-center gap-1 px-3 py-2 text-sm rounded-md transition-colors ${
+              ref={(el: HTMLAnchorElement | null) => {
+                triggerRefs.current[i] = el;
+              }}
+              className={`inline-flex items-center gap-1 px-3 py-2 text-sm rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
               aria-haspopup="menu"
               aria-expanded={isOpen}
+              onFocus={() => open(i)}
+              onKeyDown={(e) => onTriggerKeyDown(e, i)}
               onClick={() => setOpenIndex(null)}
             >
               {item.label}
@@ -175,6 +239,7 @@ function DesktopMegaMenu({ path }: { path: string }) {
             <div
               role="menu"
               aria-label={item.label}
+              aria-hidden={!isOpen}
               className={`absolute left-0 top-full pt-2 min-w-56 z-50 origin-top transition-[opacity,transform] duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] ${
                 isOpen
                   ? "opacity-100 translate-y-0 scale-100 pointer-events-auto"
@@ -189,11 +254,16 @@ function DesktopMegaMenu({ path }: { path: string }) {
                     key={c.to + c.label}
                     to={c.to}
                     role="menuitem"
+                    tabIndex={isOpen ? 0 : -1}
+                    ref={(el: HTMLAnchorElement | null) => {
+                      itemRefs.current[i][ci] = el;
+                    }}
+                    onKeyDown={(e) => onMenuKeyDown(e, i, ci)}
                     onClick={() => setOpenIndex(null)}
                     style={{
                       transitionDelay: isOpen ? `${60 + ci * 35}ms` : "0ms",
                     }}
-                    className={`block text-sm text-muted-foreground hover:text-primary hover:bg-accent/10 px-4 py-2 rounded-md transition-all duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] hover:translate-x-1 ${
+                    className={`block text-sm text-muted-foreground hover:text-primary hover:bg-accent/10 focus-visible:outline-none focus-visible:text-primary focus-visible:bg-accent/15 focus-visible:ring-2 focus-visible:ring-ring px-4 py-2 rounded-md transition-all duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] hover:translate-x-1 ${
                       isOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1"
                     }`}
                   >
@@ -208,6 +278,7 @@ function DesktopMegaMenu({ path }: { path: string }) {
       })}
     </nav>
   );
+
 }
 
 function MobileAccordion({ onNavigate }: { onNavigate: () => void }) {
