@@ -117,7 +117,7 @@ const navigation: NavItem[] = [
 ];
 
 
-function DesktopMegaMenu({ path }: { path: string }) {
+export function DesktopMegaMenu({ path }: { path: string }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const triggerRefs = useRef<(HTMLAnchorElement | null)[]>([]);
