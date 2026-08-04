@@ -21,12 +21,13 @@ vi.mock("@tanstack/react-router", () => ({
 
 import { DesktopMegaMenu } from "./Navbar";
 
-const menu = (label: string) => screen.getByRole("menu", { name: label, hidden: true });
+const menu = (label: string) =>
+  document.querySelector(`[role="menu"][aria-label="${label}"]`) as HTMLElement;
 const trigger = (label: string) =>
   screen.getByRole("link", { name: new RegExp(`^${label}$`) });
 
 const itemsOf = (label: string) =>
-  within(menu(label)).getAllByRole("menuitem", { hidden: true });
+  Array.from(menu(label).querySelectorAll('[role="menuitem"]')) as HTMLElement[];
 
 const isOpen = (label: string) => menu(label).getAttribute("aria-hidden") === "false";
 
