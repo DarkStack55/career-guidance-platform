@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // Minimal router stubs so the nav can render outside a RouterProvider.
@@ -29,6 +29,9 @@ const trigger = (label: string) =>
 const itemsOf = (label: string) =>
   Array.from(menu(label).querySelectorAll('[role="menuitem"]')) as HTMLElement[];
 
+const raf = () =>
+  act(() => new Promise<void>((r) => requestAnimationFrame(() => r())));
+
 const isOpen = (label: string) => menu(label).getAttribute("aria-hidden") === "false";
 
 describe("DesktopMegaMenu keyboard navigation", () => {
@@ -40,6 +43,7 @@ describe("DesktopMegaMenu keyboard navigation", () => {
     const user = userEvent.setup();
     trigger("Home").focus();
     await user.keyboard("{ArrowDown}");
+    await raf();
 
     expect(isOpen("Home")).toBe(true);
     expect(itemsOf("Home")[0]).toHaveFocus();
@@ -49,6 +53,7 @@ describe("DesktopMegaMenu keyboard navigation", () => {
     const user = userEvent.setup();
     trigger("Home").focus();
     await user.keyboard("{ArrowUp}");
+    await raf();
 
     const items = itemsOf("Home");
     expect(items[items.length - 1]).toHaveFocus();
@@ -58,9 +63,11 @@ describe("DesktopMegaMenu keyboard navigation", () => {
     const user = userEvent.setup();
     trigger("Assessment").focus();
     await user.keyboard("{ArrowDown}");
+    await raf();
 
     const items = itemsOf("Assessment");
     await user.keyboard("{ArrowDown}");
+    await raf();
     expect(items[1]).toHaveFocus();
 
     await user.keyboard("{ArrowUp}{ArrowUp}");
@@ -71,6 +78,7 @@ describe("DesktopMegaMenu keyboard navigation", () => {
     const user = userEvent.setup();
     trigger("Roadmap").focus();
     await user.keyboard("{ArrowDown}");
+    await raf();
 
     const items = itemsOf("Roadmap");
     await user.keyboard("{End}");
@@ -94,6 +102,7 @@ describe("DesktopMegaMenu keyboard navigation", () => {
     const user = userEvent.setup();
     trigger("Mentors").focus();
     await user.keyboard("{ArrowDown}");
+    await raf();
     expect(isOpen("Mentors")).toBe(true);
 
     trigger("Mentors").focus();
@@ -105,6 +114,7 @@ describe("DesktopMegaMenu keyboard navigation", () => {
     const user = userEvent.setup();
     trigger("Blog").focus();
     await user.keyboard("{ArrowDown}");
+    await raf();
     expect(itemsOf("Blog")[0]).toHaveFocus();
 
     await user.keyboard("{Escape}");
@@ -125,6 +135,7 @@ describe("DesktopMegaMenu keyboard navigation", () => {
     expect(t).toHaveAttribute("aria-expanded", "false");
     t.focus();
     await user.keyboard("{ArrowDown}");
+    await raf();
     expect(t).toHaveAttribute("aria-expanded", "true");
   });
 });
