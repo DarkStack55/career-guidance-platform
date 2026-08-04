@@ -21,7 +21,7 @@ vi.mock("@tanstack/react-router", () => ({
 
 import { DesktopMegaMenu } from "./Navbar";
 
-const menu = (label: string) => screen.getByRole("menu", { name: label });
+const menu = (label: string) => screen.getByRole("menu", { name: label, hidden: true });
 const trigger = (label: string) =>
   screen.getByRole("link", { name: new RegExp(`^${label}$`) });
 
