@@ -175,28 +175,34 @@ function DesktopMegaMenu({ path }: { path: string }) {
             <div
               role="menu"
               aria-label={item.label}
-              className={`absolute left-0 top-full pt-2 min-w-56 z-50 transition-all duration-150 ease-out ${
+              className={`absolute left-0 top-full pt-2 min-w-56 z-50 origin-top transition-[opacity,transform] duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] ${
                 isOpen
-                  ? "opacity-100 translate-y-0 pointer-events-auto"
-                  : "opacity-0 -translate-y-1 pointer-events-none"
+                  ? "opacity-100 translate-y-0 scale-100 pointer-events-auto"
+                  : "opacity-0 -translate-y-2 scale-[0.96] pointer-events-none"
               }`}
               onMouseEnter={cancelClose}
               onMouseLeave={scheduleClose}
             >
               <div className="bg-popover/95 backdrop-blur-xl border border-border rounded-lg shadow-2xl p-2 text-popover-foreground">
-                {item.children.map((c) => (
+                {item.children.map((c, ci) => (
                   <Link
                     key={c.to + c.label}
                     to={c.to}
                     role="menuitem"
                     onClick={() => setOpenIndex(null)}
-                    className="block text-sm text-muted-foreground hover:text-primary hover:bg-accent/10 px-4 py-2 rounded-md transition-colors"
+                    style={{
+                      transitionDelay: isOpen ? `${60 + ci * 35}ms` : "0ms",
+                    }}
+                    className={`block text-sm text-muted-foreground hover:text-primary hover:bg-accent/10 px-4 py-2 rounded-md transition-all duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] hover:translate-x-1 ${
+                      isOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1"
+                    }`}
                   >
                     {c.label}
                   </Link>
                 ))}
               </div>
             </div>
+
           </div>
         );
       })}
