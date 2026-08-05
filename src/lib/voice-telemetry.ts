@@ -22,6 +22,14 @@ export type VoiceEvent = {
 
 const MAX_EVENTS = 100;
 const buffer: VoiceEvent[] = [];
+const listeners = new Set<(events: VoiceEvent[]) => void>();
+
+export function subscribeVoiceEvents(fn: (events: VoiceEvent[]) => void) {
+  listeners.add(fn);
+  return () => {
+    listeners.delete(fn);
+  };
+}
 
 export function trackVoiceEvent(name: VoiceEventName, detail?: Record<string, unknown>) {
   const event: VoiceEvent = { name, at: new Date().toISOString(), detail };
@@ -38,8 +46,29 @@ export function trackVoiceEvent(name: VoiceEventName, detail?: Record<string, un
   } else {
     console.info(line, detail ?? {});
   }
+
+  const snapshot = [...buffer];
+  listeners.forEach((fn) => {
+    try {
+      fn(snapshot);
+    } catch {
+      /* ignore listener errors */
+    }
+  });
 }
 
 export function getVoiceEvents(): VoiceEvent[] {
   return [...buffer];
+}
+
+export function clearVoiceEvents() {
+  buffer.length = 0;
+  const snapshot: VoiceEvent[] = [];
+  listeners.forEach((fn) => {
+    try {
+      fn(snapshot);
+    } catch {
+      /* ignore listener errors */
+    }
+  });
 }
