@@ -29,6 +29,24 @@ function renderMd(text: string) {
     .replace(/\n/g, "<br/>");
 }
 
+type SpeechRecognitionLike = {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  start: () => void;
+  stop: () => void;
+  onstart: (() => void) | null;
+  onend: (() => void) | null;
+  onerror: ((e: { error?: string }) => void) | null;
+  onresult:
+    | ((e: {
+        resultIndex: number;
+        results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }>;
+      }) => void)
+    | null;
+};
+
+
 export function ChatWidget() {
   const [open, setOpen] = useState(false);
   const { user, isAuthenticated, loading: isAuthLoading } = useAuth();
