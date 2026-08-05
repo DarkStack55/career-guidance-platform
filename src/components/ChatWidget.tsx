@@ -445,9 +445,10 @@ export function ChatWidget() {
             </div>
 
             <div className="p-3 border-t border-neutral-200 dark:border-white/10 bg-neutral-50 dark:bg-white/[0.03] flex gap-2">
-              <button onClick={startVoice} className="size-9 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-100 text-neutral-700 dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.08] dark:hover:border-white/30 dark:text-white/70 flex items-center justify-center transition-colors" aria-label="Voice input">
+              <button onClick={() => void startVoice()} className={`size-9 rounded-lg border flex items-center justify-center transition-colors ${listening ? "border-rose-400 bg-rose-500/15 text-rose-500 animate-pulse" : "border-neutral-200 bg-white hover:bg-neutral-100 text-neutral-700 dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.08] dark:hover:border-white/30 dark:text-white/70"}`} aria-label={listening ? "Stop voice input" : "Voice input"} aria-pressed={listening}>
                 <Mic className="size-4" />
               </button>
+
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
