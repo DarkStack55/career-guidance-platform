@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { trackVoiceEvent } from "@/lib/voice-telemetry";
 const chatbotLogo = "/robot-avatar.png";
 const CONVERSATION_ID = "default";
 
@@ -275,6 +276,7 @@ export function ChatWidget() {
       try { recRef.current.stop(); } catch { /* noop */ }
       recRef.current = null;
       setListening(false);
+      trackVoiceEvent("voice_toggle_off");
       return;
     }
     const w = window as unknown as {
@@ -282,14 +284,27 @@ export function ChatWidget() {
       webkitSpeechRecognition?: new () => SpeechRecognitionLike;
     };
     const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
-    if (!SR) { toast.message("Voice input isn't supported in this browser. Try Chrome or Edge."); return; }
-    if (!window.isSecureContext) { toast.error("Voice input needs a secure (https) connection."); return; }
+    if (!SR) {
+      trackVoiceEvent("voice_unsupported", { ua: navigator.userAgent });
+      toast.message("Voice input isn't supported in this browser. Try Chrome or Edge.");
+      return;
+    }
+    if (!window.isSecureContext) {
+      trackVoiceEvent("voice_insecure_context", { origin: window.location.origin });
+      toast.error("Voice input needs a secure (https) connection.");
+      return;
+    }
 
     // Explicitly request mic permission first — Safari/Chrome silently abort otherwise.
     try {
       const s = await navigator.mediaDevices.getUserMedia({ audio: true });
       s.getTracks().forEach((t) => t.stop());
-    } catch {
+      trackVoiceEvent("voice_permission_granted");
+    } catch (err) {
+      trackVoiceEvent("voice_permission_denied", {
+        name: err instanceof Error ? err.name : "unknown",
+        message: err instanceof Error ? err.message : String(err),
+      });
       toast.error("Microphone blocked. Allow mic access in your browser settings.");
       return;
     }
@@ -300,7 +315,12 @@ export function ChatWidget() {
     r.continuous = false;
     r.interimResults = true;
     let finalText = "";
-    r.onstart = () => setListening(true);
+    let resultCount = 0;
+    const startedAt = Date.now();
+    r.onstart = () => {
+      setListening(true);
+      trackVoiceEvent("voice_start", { lang: r.lang });
+    };
     r.onresult = (e) => {
       let interim = "";
       for (let i = e.resultIndex; i < e.results.length; i++) {
@@ -309,10 +329,16 @@ export function ChatWidget() {
         if (res.isFinal) finalText += txt;
         else interim += txt;
       }
+      resultCount += 1;
+      trackVoiceEvent("voice_result", {
+        isFinal: finalText.length > 0 && interim.length === 0,
+        chars: (finalText + interim).length,
+      });
       setInput((finalText + interim).trim());
     };
     r.onerror = (ev) => {
       const code = ev?.error;
+      trackVoiceEvent("voice_error", { code: code ?? "unknown", elapsedMs: Date.now() - startedAt });
       if (code === "no-speech") toast.message("Didn't catch that — try speaking again.");
       else if (code === "not-allowed" || code === "service-not-allowed") toast.error("Microphone permission denied.");
       else if (code !== "aborted") toast.error("Voice input failed. Please try again.");
@@ -320,12 +346,20 @@ export function ChatWidget() {
       setListening(false);
     };
     r.onend = () => {
+      trackVoiceEvent("voice_end", {
+        durationMs: Date.now() - startedAt,
+        resultCount,
+        transcribedChars: finalText.length,
+      });
       recRef.current = null;
       setListening(false);
     };
     try {
       r.start();
-    } catch {
+    } catch (err) {
+      trackVoiceEvent("voice_start_failed", {
+        message: err instanceof Error ? err.message : String(err),
+      });
       recRef.current = null;
       setListening(false);
     }
