@@ -29,13 +29,34 @@ function renderMd(text: string) {
     .replace(/\n/g, "<br/>");
 }
 
+type SpeechRecognitionLike = {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  start: () => void;
+  stop: () => void;
+  onstart: (() => void) | null;
+  onend: (() => void) | null;
+  onerror: ((e: { error?: string }) => void) | null;
+  onresult:
+    | ((e: {
+        resultIndex: number;
+        results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }>;
+      }) => void)
+    | null;
+};
+
+
 export function ChatWidget() {
   const [open, setOpen] = useState(false);
   const { user, isAuthenticated, loading: isAuthLoading } = useAuth();
   const [msgs, setMsgs] = useState<Msg[]>(seed);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
+  const [listening, setListening] = useState(false);
+  const recRef = useRef<SpeechRecognitionLike | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+
   const scrollerRef = useRef<HTMLDivElement>(null);
   const scrollRafRef = useRef<number | null>(null);
   const loadedForUserRef = useRef<string | null>(null);
@@ -249,18 +270,67 @@ export function ChatWidget() {
     setTimeout(() => send(lastUser.content), 50);
   }, [msgs, send]);
 
-  const startVoice = useCallback(() => {
-    const w = window as unknown as { SpeechRecognition?: new () => unknown; webkitSpeechRecognition?: new () => unknown };
-    const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
-    if (!SR) { toast.message("Voice input not supported in this browser"); return; }
-    const r = new SR() as { lang: string; start: () => void; onresult: (e: { results: { 0: { transcript: string } }[] }) => void; onerror: () => void };
-    r.lang = "en-US";
-    r.onresult = (e: { results: { 0: { transcript: string } }[] }) => {
-      setInput(e.results[0][0].transcript);
+  const startVoice = useCallback(async () => {
+    if (recRef.current) {
+      try { recRef.current.stop(); } catch { /* noop */ }
+      recRef.current = null;
+      setListening(false);
+      return;
+    }
+    const w = window as unknown as {
+      SpeechRecognition?: new () => SpeechRecognitionLike;
+      webkitSpeechRecognition?: new () => SpeechRecognitionLike;
     };
-    r.onerror = () => toast.error("Voice input failed");
-    r.start();
+    const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
+    if (!SR) { toast.message("Voice input isn't supported in this browser. Try Chrome or Edge."); return; }
+    if (!window.isSecureContext) { toast.error("Voice input needs a secure (https) connection."); return; }
+
+    // Explicitly request mic permission first — Safari/Chrome silently abort otherwise.
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+      s.getTracks().forEach((t) => t.stop());
+    } catch {
+      toast.error("Microphone blocked. Allow mic access in your browser settings.");
+      return;
+    }
+
+    const r = new SR();
+    recRef.current = r;
+    r.lang = "en-US";
+    r.continuous = false;
+    r.interimResults = true;
+    let finalText = "";
+    r.onstart = () => setListening(true);
+    r.onresult = (e) => {
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const res = e.results[i];
+        const txt = res[0]?.transcript ?? "";
+        if (res.isFinal) finalText += txt;
+        else interim += txt;
+      }
+      setInput((finalText + interim).trim());
+    };
+    r.onerror = (ev) => {
+      const code = ev?.error;
+      if (code === "no-speech") toast.message("Didn't catch that — try speaking again.");
+      else if (code === "not-allowed" || code === "service-not-allowed") toast.error("Microphone permission denied.");
+      else if (code !== "aborted") toast.error("Voice input failed. Please try again.");
+      recRef.current = null;
+      setListening(false);
+    };
+    r.onend = () => {
+      recRef.current = null;
+      setListening(false);
+    };
+    try {
+      r.start();
+    } catch {
+      recRef.current = null;
+      setListening(false);
+    }
   }, []);
+
 
   const speak = useCallback((text: string) => {
     if (typeof window === "undefined" || !window.speechSynthesis) return;
@@ -375,9 +445,10 @@ export function ChatWidget() {
             </div>
 
             <div className="p-3 border-t border-neutral-200 dark:border-white/10 bg-neutral-50 dark:bg-white/[0.03] flex gap-2">
-              <button onClick={startVoice} className="size-9 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-100 text-neutral-700 dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.08] dark:hover:border-white/30 dark:text-white/70 flex items-center justify-center transition-colors" aria-label="Voice input">
+              <button onClick={() => void startVoice()} className={`size-9 rounded-lg border flex items-center justify-center transition-colors ${listening ? "border-rose-400 bg-rose-500/15 text-rose-500 animate-pulse" : "border-neutral-200 bg-white hover:bg-neutral-100 text-neutral-700 dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.08] dark:hover:border-white/30 dark:text-white/70"}`} aria-label={listening ? "Stop voice input" : "Voice input"} aria-pressed={listening}>
                 <Mic className="size-4" />
               </button>
+
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
