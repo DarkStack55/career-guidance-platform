@@ -249,18 +249,67 @@ export function ChatWidget() {
     setTimeout(() => send(lastUser.content), 50);
   }, [msgs, send]);
 
-  const startVoice = useCallback(() => {
-    const w = window as unknown as { SpeechRecognition?: new () => unknown; webkitSpeechRecognition?: new () => unknown };
-    const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
-    if (!SR) { toast.message("Voice input not supported in this browser"); return; }
-    const r = new SR() as { lang: string; start: () => void; onresult: (e: { results: { 0: { transcript: string } }[] }) => void; onerror: () => void };
-    r.lang = "en-US";
-    r.onresult = (e: { results: { 0: { transcript: string } }[] }) => {
-      setInput(e.results[0][0].transcript);
+  const startVoice = useCallback(async () => {
+    if (recRef.current) {
+      try { recRef.current.stop(); } catch { /* noop */ }
+      recRef.current = null;
+      setListening(false);
+      return;
+    }
+    const w = window as unknown as {
+      SpeechRecognition?: new () => SpeechRecognitionLike;
+      webkitSpeechRecognition?: new () => SpeechRecognitionLike;
     };
-    r.onerror = () => toast.error("Voice input failed");
-    r.start();
+    const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
+    if (!SR) { toast.message("Voice input isn't supported in this browser. Try Chrome or Edge."); return; }
+    if (!window.isSecureContext) { toast.error("Voice input needs a secure (https) connection."); return; }
+
+    // Explicitly request mic permission first — Safari/Chrome silently abort otherwise.
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+      s.getTracks().forEach((t) => t.stop());
+    } catch {
+      toast.error("Microphone blocked. Allow mic access in your browser settings.");
+      return;
+    }
+
+    const r = new SR();
+    recRef.current = r;
+    r.lang = "en-US";
+    r.continuous = false;
+    r.interimResults = true;
+    let finalText = "";
+    r.onstart = () => setListening(true);
+    r.onresult = (e) => {
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const res = e.results[i];
+        const txt = res[0]?.transcript ?? "";
+        if (res.isFinal) finalText += txt;
+        else interim += txt;
+      }
+      setInput((finalText + interim).trim());
+    };
+    r.onerror = (ev) => {
+      const code = ev?.error;
+      if (code === "no-speech") toast.message("Didn't catch that — try speaking again.");
+      else if (code === "not-allowed" || code === "service-not-allowed") toast.error("Microphone permission denied.");
+      else if (code !== "aborted") toast.error("Voice input failed. Please try again.");
+      recRef.current = null;
+      setListening(false);
+    };
+    r.onend = () => {
+      recRef.current = null;
+      setListening(false);
+    };
+    try {
+      r.start();
+    } catch {
+      recRef.current = null;
+      setListening(false);
+    }
   }, []);
+
 
   const speak = useCallback((text: string) => {
     if (typeof window === "undefined" || !window.speechSynthesis) return;
