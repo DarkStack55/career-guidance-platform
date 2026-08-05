@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Send, X, Sparkles, RotateCcw, Mic, Volume2 } from "lucide-react";
+import { Send, X, Sparkles, RotateCcw, Mic, Volume2, Bug } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { trackVoiceEvent } from "@/lib/voice-telemetry";
+import { VoiceDebugPanel } from "@/components/VoiceDebugPanel";
 const chatbotLogo = "/robot-avatar.png";
 const CONVERSATION_ID = "default";
 
@@ -55,6 +56,7 @@ export function ChatWidget() {
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [listening, setListening] = useState(false);
+  const [debugOpen, setDebugOpen] = useState(false);
   const recRef = useRef<SpeechRecognitionLike | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
