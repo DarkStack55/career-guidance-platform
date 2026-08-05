@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Send, X, Sparkles, RotateCcw, Mic, Volume2 } from "lucide-react";
+import { Send, X, Sparkles, RotateCcw, Mic, Volume2, Bug } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { trackVoiceEvent } from "@/lib/voice-telemetry";
+import { VoiceDebugPanel } from "@/components/VoiceDebugPanel";
 const chatbotLogo = "/robot-avatar.png";
 const CONVERSATION_ID = "default";
 
@@ -55,6 +56,7 @@ export function ChatWidget() {
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [listening, setListening] = useState(false);
+  const [debugOpen, setDebugOpen] = useState(false);
   const recRef = useRef<SpeechRecognitionLike | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -420,7 +422,7 @@ export function ChatWidget() {
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
             style={{ transformOrigin: "bottom right" }}
-            className="fixed z-[9999] inset-0 sm:inset-auto sm:bottom-24 sm:right-6 sm:w-[380px] sm:max-w-[calc(100vw-3rem)] sm:h-[min(600px,calc(100dvh-8rem))] sm:rounded-2xl bg-white/95 dark:bg-white/[0.03] backdrop-blur-3xl border border-neutral-200 dark:border-white/10 shadow-[0_20px_60px_0_rgba(0,0,0,0.15)] dark:shadow-[0_8px_32px_0_rgba(255,255,255,0.05),0_20px_60px_0_rgba(0,0,0,0.6)] flex flex-col overflow-hidden gpu"
+            className="fixed z-[9999] inset-0 sm:inset-auto sm:bottom-24 sm:right-6 sm:w-[380px] sm:max-w-[calc(100vw-3rem)] sm:h-[min(600px,calc(100dvh-8rem))] sm:rounded-2xl bg-white/95 dark:bg-white/[0.03] backdrop-blur-3xl border border-neutral-200 dark:border-white/10 shadow-[0_20px_60px_0_rgba(0,0,0,0.15)] dark:shadow-[0_8px_32px_0_rgba(255,255,255,0.05),0_20px_60px_0_rgba(0,0,0,0.6)] flex flex-col overflow-hidden gpu relative"
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-white/10 bg-neutral-50 dark:bg-white/[0.03]">
 
@@ -434,10 +436,23 @@ export function ChatWidget() {
                   <div className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">● {streaming ? "TYPING" : "ONLINE"}</div>
                 </div>
               </div>
-              <button onClick={() => setOpen(false)} className="text-neutral-500 hover:text-neutral-900 dark:text-white/60 dark:hover:text-white transition-colors" aria-label="Close">
-                <X className="size-4" />
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setDebugOpen((v) => !v)}
+                  className={`transition-colors ${debugOpen ? "text-primary" : "text-neutral-500 hover:text-neutral-900 dark:text-white/60 dark:hover:text-white"}`}
+                  aria-label="Voice debug panel"
+                  aria-pressed={debugOpen}
+                >
+                  <Bug className="size-4" />
+                </button>
+                <button onClick={() => setOpen(false)} className="text-neutral-500 hover:text-neutral-900 dark:text-white/60 dark:hover:text-white transition-colors" aria-label="Close">
+                  <X className="size-4" />
+                </button>
+              </div>
             </div>
+
+            {debugOpen && <VoiceDebugPanel listening={listening} onClose={() => setDebugOpen(false)} />}
+
 
             <div
               ref={scrollerRef}
