@@ -76,6 +76,7 @@ import { Route as DashboardProfileRouteImport } from './routes/dashboard.profile
 import { Route as DashboardBadgesRouteImport } from './routes/dashboard.badges'
 import { Route as DashboardApplicationsRouteImport } from './routes/dashboard.applications'
 import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard.analytics'
+import { Route as CareerSlugRouteImport } from './routes/career.$slug'
 import { Route as BlogStoriesRouteImport } from './routes/blog.stories'
 import { Route as BlogNewsRouteImport } from './routes/blog.news'
 import { Route as BlogAdviceRouteImport } from './routes/blog.advice'
@@ -432,6 +433,11 @@ const DashboardAnalyticsRoute = DashboardAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => DashboardRoute,
 } as any)
+const CareerSlugRoute = CareerSlugRouteImport.update({
+  id: '/career/$slug',
+  path: '/career/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogStoriesRoute = BlogStoriesRouteImport.update({
   id: '/stories',
   path: '/stories',
@@ -584,6 +590,7 @@ export interface FileRoutesByFullPath {
   '/blog/advice': typeof BlogAdviceRoute
   '/blog/news': typeof BlogNewsRoute
   '/blog/stories': typeof BlogStoriesRoute
+  '/career/$slug': typeof CareerSlugRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/applications': typeof DashboardApplicationsRoute
   '/dashboard/badges': typeof DashboardBadgesRoute
@@ -666,6 +673,7 @@ export interface FileRoutesByTo {
   '/blog/advice': typeof BlogAdviceRoute
   '/blog/news': typeof BlogNewsRoute
   '/blog/stories': typeof BlogStoriesRoute
+  '/career/$slug': typeof CareerSlugRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/applications': typeof DashboardApplicationsRoute
   '/dashboard/badges': typeof DashboardBadgesRoute
@@ -756,6 +764,7 @@ export interface FileRoutesById {
   '/blog/advice': typeof BlogAdviceRoute
   '/blog/news': typeof BlogNewsRoute
   '/blog/stories': typeof BlogStoriesRoute
+  '/career/$slug': typeof CareerSlugRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/applications': typeof DashboardApplicationsRoute
   '/dashboard/badges': typeof DashboardBadgesRoute
@@ -847,6 +856,7 @@ export interface FileRouteTypes {
     | '/blog/advice'
     | '/blog/news'
     | '/blog/stories'
+    | '/career/$slug'
     | '/dashboard/analytics'
     | '/dashboard/applications'
     | '/dashboard/badges'
@@ -929,6 +939,7 @@ export interface FileRouteTypes {
     | '/blog/advice'
     | '/blog/news'
     | '/blog/stories'
+    | '/career/$slug'
     | '/dashboard/analytics'
     | '/dashboard/applications'
     | '/dashboard/badges'
@@ -1018,6 +1029,7 @@ export interface FileRouteTypes {
     | '/blog/advice'
     | '/blog/news'
     | '/blog/stories'
+    | '/career/$slug'
     | '/dashboard/analytics'
     | '/dashboard/applications'
     | '/dashboard/badges'
@@ -1098,6 +1110,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   ApplyJobIdRoute: typeof ApplyJobIdRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
+  CareerSlugRoute: typeof CareerSlugRoute
   DomainSlugRoute: typeof DomainSlugRoute
   StreamIdRoute: typeof StreamIdRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
@@ -1578,6 +1591,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAnalyticsRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/career/$slug': {
+      id: '/career/$slug'
+      path: '/career/$slug'
+      fullPath: '/career/$slug'
+      preLoaderRoute: typeof CareerSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog/stories': {
       id: '/blog/stories'
       path: '/stories'
@@ -1913,6 +1933,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   ApplyJobIdRoute: ApplyJobIdRoute,
   AuthCallbackRoute: AuthCallbackRoute,
+  CareerSlugRoute: CareerSlugRoute,
   DomainSlugRoute: DomainSlugRoute,
   StreamIdRoute: StreamIdRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
