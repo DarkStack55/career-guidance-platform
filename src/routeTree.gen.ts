@@ -34,6 +34,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CompareRouteImport } from './routes/compare'
+import { Route as CareerUniverseRouteImport } from './routes/career-universe'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AssessmentRouteImport } from './routes/assessment'
 import { Route as AdminLoginRouteImport } from './routes/admin-login'
@@ -47,6 +48,7 @@ import { Route as InternshipsIndexRouteImport } from './routes/internships.index
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as AssessmentIndexRouteImport } from './routes/assessment.index'
+import { Route as StreamIdRouteImport } from './routes/stream.$id'
 import { Route as ScholarshipsNeedRouteImport } from './routes/scholarships.need'
 import { Route as ScholarshipsMeritRouteImport } from './routes/scholarships.merit'
 import { Route as ScholarshipsDiversityRouteImport } from './routes/scholarships.diversity'
@@ -75,6 +77,7 @@ import { Route as DashboardProfileRouteImport } from './routes/dashboard.profile
 import { Route as DashboardBadgesRouteImport } from './routes/dashboard.badges'
 import { Route as DashboardApplicationsRouteImport } from './routes/dashboard.applications'
 import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard.analytics'
+import { Route as CareerSlugRouteImport } from './routes/career.$slug'
 import { Route as BlogStoriesRouteImport } from './routes/blog.stories'
 import { Route as BlogNewsRouteImport } from './routes/blog.news'
 import { Route as BlogAdviceRouteImport } from './routes/blog.advice'
@@ -221,6 +224,11 @@ const CompareRoute = CompareRouteImport.update({
   path: '/compare',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CareerUniverseRoute = CareerUniverseRouteImport.update({
+  id: '/career-universe',
+  path: '/career-universe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogRoute = BlogRouteImport.update({
   id: '/blog',
   path: '/blog',
@@ -285,6 +293,11 @@ const AssessmentIndexRoute = AssessmentIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AssessmentRoute,
+} as any)
+const StreamIdRoute = StreamIdRouteImport.update({
+  id: '/stream/$id',
+  path: '/stream/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ScholarshipsNeedRoute = ScholarshipsNeedRouteImport.update({
   id: '/need',
@@ -426,6 +439,11 @@ const DashboardAnalyticsRoute = DashboardAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => DashboardRoute,
 } as any)
+const CareerSlugRoute = CareerSlugRouteImport.update({
+  id: '/career/$slug',
+  path: '/career/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogStoriesRoute = BlogStoriesRouteImport.update({
   id: '/stories',
   path: '/stories',
@@ -538,6 +556,7 @@ export interface FileRoutesByFullPath {
   '/admin-login': typeof AdminLoginRoute
   '/assessment': typeof AssessmentRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
+  '/career-universe': typeof CareerUniverseRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/courses': typeof CoursesRoute
@@ -578,6 +597,7 @@ export interface FileRoutesByFullPath {
   '/blog/advice': typeof BlogAdviceRoute
   '/blog/news': typeof BlogNewsRoute
   '/blog/stories': typeof BlogStoriesRoute
+  '/career/$slug': typeof CareerSlugRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/applications': typeof DashboardApplicationsRoute
   '/dashboard/badges': typeof DashboardBadgesRoute
@@ -606,6 +626,7 @@ export interface FileRoutesByFullPath {
   '/scholarships/diversity': typeof ScholarshipsDiversityRoute
   '/scholarships/merit': typeof ScholarshipsMeritRoute
   '/scholarships/need': typeof ScholarshipsNeedRoute
+  '/stream/$id': typeof StreamIdRoute
   '/assessment/': typeof AssessmentIndexRoute
   '/blog/': typeof BlogIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -624,6 +645,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/admin-login': typeof AdminLoginRoute
+  '/career-universe': typeof CareerUniverseRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/courses': typeof CoursesRoute
@@ -659,6 +681,7 @@ export interface FileRoutesByTo {
   '/blog/advice': typeof BlogAdviceRoute
   '/blog/news': typeof BlogNewsRoute
   '/blog/stories': typeof BlogStoriesRoute
+  '/career/$slug': typeof CareerSlugRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/applications': typeof DashboardApplicationsRoute
   '/dashboard/badges': typeof DashboardBadgesRoute
@@ -687,6 +710,7 @@ export interface FileRoutesByTo {
   '/scholarships/diversity': typeof ScholarshipsDiversityRoute
   '/scholarships/merit': typeof ScholarshipsMeritRoute
   '/scholarships/need': typeof ScholarshipsNeedRoute
+  '/stream/$id': typeof StreamIdRoute
   '/assessment': typeof AssessmentIndexRoute
   '/blog': typeof BlogIndexRoute
   '/dashboard': typeof DashboardIndexRoute
@@ -708,6 +732,7 @@ export interface FileRoutesById {
   '/admin-login': typeof AdminLoginRoute
   '/assessment': typeof AssessmentRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
+  '/career-universe': typeof CareerUniverseRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/courses': typeof CoursesRoute
@@ -748,6 +773,7 @@ export interface FileRoutesById {
   '/blog/advice': typeof BlogAdviceRoute
   '/blog/news': typeof BlogNewsRoute
   '/blog/stories': typeof BlogStoriesRoute
+  '/career/$slug': typeof CareerSlugRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/applications': typeof DashboardApplicationsRoute
   '/dashboard/badges': typeof DashboardBadgesRoute
@@ -776,6 +802,7 @@ export interface FileRoutesById {
   '/scholarships/diversity': typeof ScholarshipsDiversityRoute
   '/scholarships/merit': typeof ScholarshipsMeritRoute
   '/scholarships/need': typeof ScholarshipsNeedRoute
+  '/stream/$id': typeof StreamIdRoute
   '/assessment/': typeof AssessmentIndexRoute
   '/blog/': typeof BlogIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -798,6 +825,7 @@ export interface FileRouteTypes {
     | '/admin-login'
     | '/assessment'
     | '/blog'
+    | '/career-universe'
     | '/compare'
     | '/contact'
     | '/courses'
@@ -838,6 +866,7 @@ export interface FileRouteTypes {
     | '/blog/advice'
     | '/blog/news'
     | '/blog/stories'
+    | '/career/$slug'
     | '/dashboard/analytics'
     | '/dashboard/applications'
     | '/dashboard/badges'
@@ -866,6 +895,7 @@ export interface FileRouteTypes {
     | '/scholarships/diversity'
     | '/scholarships/merit'
     | '/scholarships/need'
+    | '/stream/$id'
     | '/assessment/'
     | '/blog/'
     | '/dashboard/'
@@ -884,6 +914,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/admin-login'
+    | '/career-universe'
     | '/compare'
     | '/contact'
     | '/courses'
@@ -919,6 +950,7 @@ export interface FileRouteTypes {
     | '/blog/advice'
     | '/blog/news'
     | '/blog/stories'
+    | '/career/$slug'
     | '/dashboard/analytics'
     | '/dashboard/applications'
     | '/dashboard/badges'
@@ -947,6 +979,7 @@ export interface FileRouteTypes {
     | '/scholarships/diversity'
     | '/scholarships/merit'
     | '/scholarships/need'
+    | '/stream/$id'
     | '/assessment'
     | '/blog'
     | '/dashboard'
@@ -967,6 +1000,7 @@ export interface FileRouteTypes {
     | '/admin-login'
     | '/assessment'
     | '/blog'
+    | '/career-universe'
     | '/compare'
     | '/contact'
     | '/courses'
@@ -1007,6 +1041,7 @@ export interface FileRouteTypes {
     | '/blog/advice'
     | '/blog/news'
     | '/blog/stories'
+    | '/career/$slug'
     | '/dashboard/analytics'
     | '/dashboard/applications'
     | '/dashboard/badges'
@@ -1035,6 +1070,7 @@ export interface FileRouteTypes {
     | '/scholarships/diversity'
     | '/scholarships/merit'
     | '/scholarships/need'
+    | '/stream/$id'
     | '/assessment/'
     | '/blog/'
     | '/dashboard/'
@@ -1056,6 +1092,7 @@ export interface RootRouteChildren {
   AdminLoginRoute: typeof AdminLoginRoute
   AssessmentRoute: typeof AssessmentRouteWithChildren
   BlogRoute: typeof BlogRouteWithChildren
+  CareerUniverseRoute: typeof CareerUniverseRoute
   CompareRoute: typeof CompareRoute
   ContactRoute: typeof ContactRoute
   CoursesRoute: typeof CoursesRoute
@@ -1086,7 +1123,9 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   ApplyJobIdRoute: typeof ApplyJobIdRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
+  CareerSlugRoute: typeof CareerSlugRoute
   DomainSlugRoute: typeof DomainSlugRoute
+  StreamIdRoute: typeof StreamIdRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -1271,6 +1310,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompareRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/career-universe': {
+      id: '/career-universe'
+      path: '/career-universe'
+      fullPath: '/career-universe'
+      preLoaderRoute: typeof CareerUniverseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog': {
       id: '/blog'
       path: '/blog'
@@ -1361,6 +1407,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/assessment/'
       preLoaderRoute: typeof AssessmentIndexRouteImport
       parentRoute: typeof AssessmentRoute
+    }
+    '/stream/$id': {
+      id: '/stream/$id'
+      path: '/stream/$id'
+      fullPath: '/stream/$id'
+      preLoaderRoute: typeof StreamIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/scholarships/need': {
       id: '/scholarships/need'
@@ -1557,6 +1610,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/analytics'
       preLoaderRoute: typeof DashboardAnalyticsRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/career/$slug': {
+      id: '/career/$slug'
+      path: '/career/$slug'
+      fullPath: '/career/$slug'
+      preLoaderRoute: typeof CareerSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/blog/stories': {
       id: '/blog/stories'
@@ -1862,6 +1922,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
   AssessmentRoute: AssessmentRouteWithChildren,
   BlogRoute: BlogRouteWithChildren,
+  CareerUniverseRoute: CareerUniverseRoute,
   CompareRoute: CompareRoute,
   ContactRoute: ContactRoute,
   CoursesRoute: CoursesRoute,
@@ -1893,7 +1954,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   ApplyJobIdRoute: ApplyJobIdRoute,
   AuthCallbackRoute: AuthCallbackRoute,
+  CareerSlugRoute: CareerSlugRoute,
   DomainSlugRoute: DomainSlugRoute,
+  StreamIdRoute: StreamIdRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
