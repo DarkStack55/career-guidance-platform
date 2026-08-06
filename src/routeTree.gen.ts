@@ -34,6 +34,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CompareRouteImport } from './routes/compare'
+import { Route as CareerUniverseRouteImport } from './routes/career-universe'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AssessmentRouteImport } from './routes/assessment'
 import { Route as AdminLoginRouteImport } from './routes/admin-login'
@@ -221,6 +222,11 @@ const ContactRoute = ContactRouteImport.update({
 const CompareRoute = CompareRouteImport.update({
   id: '/compare',
   path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CareerUniverseRoute = CareerUniverseRouteImport.update({
+  id: '/career-universe',
+  path: '/career-universe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogRoute = BlogRouteImport.update({
@@ -550,6 +556,7 @@ export interface FileRoutesByFullPath {
   '/admin-login': typeof AdminLoginRoute
   '/assessment': typeof AssessmentRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
+  '/career-universe': typeof CareerUniverseRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/courses': typeof CoursesRoute
@@ -638,6 +645,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/admin-login': typeof AdminLoginRoute
+  '/career-universe': typeof CareerUniverseRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/courses': typeof CoursesRoute
@@ -724,6 +732,7 @@ export interface FileRoutesById {
   '/admin-login': typeof AdminLoginRoute
   '/assessment': typeof AssessmentRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
+  '/career-universe': typeof CareerUniverseRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/courses': typeof CoursesRoute
@@ -816,6 +825,7 @@ export interface FileRouteTypes {
     | '/admin-login'
     | '/assessment'
     | '/blog'
+    | '/career-universe'
     | '/compare'
     | '/contact'
     | '/courses'
@@ -904,6 +914,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/admin-login'
+    | '/career-universe'
     | '/compare'
     | '/contact'
     | '/courses'
@@ -989,6 +1000,7 @@ export interface FileRouteTypes {
     | '/admin-login'
     | '/assessment'
     | '/blog'
+    | '/career-universe'
     | '/compare'
     | '/contact'
     | '/courses'
@@ -1080,6 +1092,7 @@ export interface RootRouteChildren {
   AdminLoginRoute: typeof AdminLoginRoute
   AssessmentRoute: typeof AssessmentRouteWithChildren
   BlogRoute: typeof BlogRouteWithChildren
+  CareerUniverseRoute: typeof CareerUniverseRoute
   CompareRoute: typeof CompareRoute
   ContactRoute: typeof ContactRoute
   CoursesRoute: typeof CoursesRoute
@@ -1295,6 +1308,13 @@ declare module '@tanstack/react-router' {
       path: '/compare'
       fullPath: '/compare'
       preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/career-universe': {
+      id: '/career-universe'
+      path: '/career-universe'
+      fullPath: '/career-universe'
+      preLoaderRoute: typeof CareerUniverseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog': {
@@ -1902,6 +1922,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
   AssessmentRoute: AssessmentRouteWithChildren,
   BlogRoute: BlogRouteWithChildren,
+  CareerUniverseRoute: CareerUniverseRoute,
   CompareRoute: CompareRoute,
   ContactRoute: ContactRoute,
   CoursesRoute: CoursesRoute,
