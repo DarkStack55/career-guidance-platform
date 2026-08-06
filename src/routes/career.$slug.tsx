@@ -7,7 +7,7 @@ import {
   Users, Globe, Laptop, Gauge, GraduationCap, Building2, Award, Briefcase,
   Sparkles, TrendingUp, CheckCircle2,
 } from "lucide-react";
-import { careerBySlug, careersByGroup, streamById } from "@/lib/career-hub";
+import { careerBySlug, careersByGroup, streamById, type Career } from "@/lib/career-hub";
 import { saveCareer } from "@/lib/saved-careers.functions";
 import { openChatGate } from "@/lib/chatGate";
 import { CareerCard } from "@/components/career/CareerCard";
@@ -42,7 +42,7 @@ export const Route = createFileRoute("/career/$slug")({
 const WISHLIST_KEY = "cp_career_wishlist";
 
 function CareerDetail() {
-  const { career } = Route.useLoaderData();
+  const { career } = Route.useLoaderData() as { career: Career };
   const save = useServerFn(saveCareer);
   const [saved, setSaved] = useState(false);
   const [salaryLevel, setSalaryLevel] = useState(1);
