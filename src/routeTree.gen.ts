@@ -47,6 +47,7 @@ import { Route as InternshipsIndexRouteImport } from './routes/internships.index
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as AssessmentIndexRouteImport } from './routes/assessment.index'
+import { Route as StreamIdRouteImport } from './routes/stream.$id'
 import { Route as ScholarshipsNeedRouteImport } from './routes/scholarships.need'
 import { Route as ScholarshipsMeritRouteImport } from './routes/scholarships.merit'
 import { Route as ScholarshipsDiversityRouteImport } from './routes/scholarships.diversity'
@@ -285,6 +286,11 @@ const AssessmentIndexRoute = AssessmentIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AssessmentRoute,
+} as any)
+const StreamIdRoute = StreamIdRouteImport.update({
+  id: '/stream/$id',
+  path: '/stream/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ScholarshipsNeedRoute = ScholarshipsNeedRouteImport.update({
   id: '/need',
@@ -606,6 +612,7 @@ export interface FileRoutesByFullPath {
   '/scholarships/diversity': typeof ScholarshipsDiversityRoute
   '/scholarships/merit': typeof ScholarshipsMeritRoute
   '/scholarships/need': typeof ScholarshipsNeedRoute
+  '/stream/$id': typeof StreamIdRoute
   '/assessment/': typeof AssessmentIndexRoute
   '/blog/': typeof BlogIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -687,6 +694,7 @@ export interface FileRoutesByTo {
   '/scholarships/diversity': typeof ScholarshipsDiversityRoute
   '/scholarships/merit': typeof ScholarshipsMeritRoute
   '/scholarships/need': typeof ScholarshipsNeedRoute
+  '/stream/$id': typeof StreamIdRoute
   '/assessment': typeof AssessmentIndexRoute
   '/blog': typeof BlogIndexRoute
   '/dashboard': typeof DashboardIndexRoute
@@ -776,6 +784,7 @@ export interface FileRoutesById {
   '/scholarships/diversity': typeof ScholarshipsDiversityRoute
   '/scholarships/merit': typeof ScholarshipsMeritRoute
   '/scholarships/need': typeof ScholarshipsNeedRoute
+  '/stream/$id': typeof StreamIdRoute
   '/assessment/': typeof AssessmentIndexRoute
   '/blog/': typeof BlogIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -866,6 +875,7 @@ export interface FileRouteTypes {
     | '/scholarships/diversity'
     | '/scholarships/merit'
     | '/scholarships/need'
+    | '/stream/$id'
     | '/assessment/'
     | '/blog/'
     | '/dashboard/'
@@ -947,6 +957,7 @@ export interface FileRouteTypes {
     | '/scholarships/diversity'
     | '/scholarships/merit'
     | '/scholarships/need'
+    | '/stream/$id'
     | '/assessment'
     | '/blog'
     | '/dashboard'
@@ -1035,6 +1046,7 @@ export interface FileRouteTypes {
     | '/scholarships/diversity'
     | '/scholarships/merit'
     | '/scholarships/need'
+    | '/stream/$id'
     | '/assessment/'
     | '/blog/'
     | '/dashboard/'
@@ -1087,6 +1099,7 @@ export interface RootRouteChildren {
   ApplyJobIdRoute: typeof ApplyJobIdRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   DomainSlugRoute: typeof DomainSlugRoute
+  StreamIdRoute: typeof StreamIdRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -1361,6 +1374,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/assessment/'
       preLoaderRoute: typeof AssessmentIndexRouteImport
       parentRoute: typeof AssessmentRoute
+    }
+    '/stream/$id': {
+      id: '/stream/$id'
+      path: '/stream/$id'
+      fullPath: '/stream/$id'
+      preLoaderRoute: typeof StreamIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/scholarships/need': {
       id: '/scholarships/need'
@@ -1894,6 +1914,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApplyJobIdRoute: ApplyJobIdRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   DomainSlugRoute: DomainSlugRoute,
+  StreamIdRoute: StreamIdRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
