@@ -83,6 +83,7 @@ import { Route as BlogNewsRouteImport } from './routes/blog.news'
 import { Route as BlogAdviceRouteImport } from './routes/blog.advice'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AssessmentTechnicalRouteImport } from './routes/assessment.technical'
+import { Route as AssessmentResumeBuilderRouteImport } from './routes/assessment.resume-builder'
 import { Route as AssessmentResumeRouteImport } from './routes/assessment.resume'
 import { Route as AssessmentPersonalityRouteImport } from './routes/assessment.personality'
 import { Route as AssessmentMockInterviewRouteImport } from './routes/assessment.mock-interview'
@@ -469,6 +470,11 @@ const AssessmentTechnicalRoute = AssessmentTechnicalRouteImport.update({
   path: '/technical',
   getParentRoute: () => AssessmentRoute,
 } as any)
+const AssessmentResumeBuilderRoute = AssessmentResumeBuilderRouteImport.update({
+  id: '/resume-builder',
+  path: '/resume-builder',
+  getParentRoute: () => AssessmentRoute,
+} as any)
 const AssessmentResumeRoute = AssessmentResumeRouteImport.update({
   id: '/resume',
   path: '/resume',
@@ -592,6 +598,7 @@ export interface FileRoutesByFullPath {
   '/assessment/mock-interview': typeof AssessmentMockInterviewRoute
   '/assessment/personality': typeof AssessmentPersonalityRoute
   '/assessment/resume': typeof AssessmentResumeRoute
+  '/assessment/resume-builder': typeof AssessmentResumeBuilderRoute
   '/assessment/technical': typeof AssessmentTechnicalRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/blog/advice': typeof BlogAdviceRoute
@@ -676,6 +683,7 @@ export interface FileRoutesByTo {
   '/assessment/mock-interview': typeof AssessmentMockInterviewRoute
   '/assessment/personality': typeof AssessmentPersonalityRoute
   '/assessment/resume': typeof AssessmentResumeRoute
+  '/assessment/resume-builder': typeof AssessmentResumeBuilderRoute
   '/assessment/technical': typeof AssessmentTechnicalRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/blog/advice': typeof BlogAdviceRoute
@@ -768,6 +776,7 @@ export interface FileRoutesById {
   '/assessment/mock-interview': typeof AssessmentMockInterviewRoute
   '/assessment/personality': typeof AssessmentPersonalityRoute
   '/assessment/resume': typeof AssessmentResumeRoute
+  '/assessment/resume-builder': typeof AssessmentResumeBuilderRoute
   '/assessment/technical': typeof AssessmentTechnicalRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/blog/advice': typeof BlogAdviceRoute
@@ -861,6 +870,7 @@ export interface FileRouteTypes {
     | '/assessment/mock-interview'
     | '/assessment/personality'
     | '/assessment/resume'
+    | '/assessment/resume-builder'
     | '/assessment/technical'
     | '/auth/callback'
     | '/blog/advice'
@@ -945,6 +955,7 @@ export interface FileRouteTypes {
     | '/assessment/mock-interview'
     | '/assessment/personality'
     | '/assessment/resume'
+    | '/assessment/resume-builder'
     | '/assessment/technical'
     | '/auth/callback'
     | '/blog/advice'
@@ -1036,6 +1047,7 @@ export interface FileRouteTypes {
     | '/assessment/mock-interview'
     | '/assessment/personality'
     | '/assessment/resume'
+    | '/assessment/resume-builder'
     | '/assessment/technical'
     | '/auth/callback'
     | '/blog/advice'
@@ -1653,6 +1665,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssessmentTechnicalRouteImport
       parentRoute: typeof AssessmentRoute
     }
+    '/assessment/resume-builder': {
+      id: '/assessment/resume-builder'
+      path: '/resume-builder'
+      fullPath: '/assessment/resume-builder'
+      preLoaderRoute: typeof AssessmentResumeBuilderRouteImport
+      parentRoute: typeof AssessmentRoute
+    }
     '/assessment/resume': {
       id: '/assessment/resume'
       path: '/resume'
@@ -1768,6 +1787,7 @@ interface AssessmentRouteChildren {
   AssessmentMockInterviewRoute: typeof AssessmentMockInterviewRoute
   AssessmentPersonalityRoute: typeof AssessmentPersonalityRoute
   AssessmentResumeRoute: typeof AssessmentResumeRoute
+  AssessmentResumeBuilderRoute: typeof AssessmentResumeBuilderRoute
   AssessmentTechnicalRoute: typeof AssessmentTechnicalRoute
   AssessmentIndexRoute: typeof AssessmentIndexRoute
 }
@@ -1779,6 +1799,7 @@ const AssessmentRouteChildren: AssessmentRouteChildren = {
   AssessmentMockInterviewRoute: AssessmentMockInterviewRoute,
   AssessmentPersonalityRoute: AssessmentPersonalityRoute,
   AssessmentResumeRoute: AssessmentResumeRoute,
+  AssessmentResumeBuilderRoute: AssessmentResumeBuilderRoute,
   AssessmentTechnicalRoute: AssessmentTechnicalRoute,
   AssessmentIndexRoute: AssessmentIndexRoute,
 }
