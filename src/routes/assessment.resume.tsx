@@ -148,6 +148,12 @@ function ResumeGraderPage() {
               Drop your resume — Zoiee grades it like a senior recruiter: overall impression, ATS parseability,
               per-section breakdown, and concrete rewrite instructions.
             </p>
+            <Link
+              to="/assessment/resume-builder"
+              className="mt-6 inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-secondary"
+            >
+              <Sparkles className="size-3.5 text-primary" /> Build or edit a resume + get a skill-gap plan
+            </Link>
           </div>
         </div>
       </div>
