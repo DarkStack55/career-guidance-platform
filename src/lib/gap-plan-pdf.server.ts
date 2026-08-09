@@ -79,7 +79,7 @@ export async function buildGapPlanPdf(plan: GapPlan, candidateName: string): Pro
   };
 
   // Header
-  text("CareerPilot AI", { size: 10, f: bold, color: muted });
+  text("CareerPilot AI", { size: 10, f: bold, color: muted, gap: 8 });
   text("Skill-Gap Analysis & Improvement Plan", { size: 22, f: bold });
   text(
     `${candidateName ? `${candidateName} · ` : ""}Target role: ${plan.target_role} · ${new Date().toLocaleDateString()}`,
