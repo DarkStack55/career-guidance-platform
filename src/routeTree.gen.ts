@@ -60,6 +60,7 @@ import { Route as RoadmapMilestonesRouteImport } from './routes/roadmap.mileston
 import { Route as RoadmapCreativeRouteImport } from './routes/roadmap.creative'
 import { Route as RoadmapBusinessRouteImport } from './routes/roadmap.business'
 import { Route as RoadmapAiRouteImport } from './routes/roadmap.ai'
+import { Route as PlanIdRouteImport } from './routes/plan.$id'
 import { Route as MentorsTopRouteImport } from './routes/mentors.top'
 import { Route as MentorsSessionsRouteImport } from './routes/mentors.sessions'
 import { Route as MentorsFindRouteImport } from './routes/mentors.find'
@@ -355,6 +356,11 @@ const RoadmapAiRoute = RoadmapAiRouteImport.update({
   path: '/ai',
   getParentRoute: () => RoadmapRoute,
 } as any)
+const PlanIdRoute = PlanIdRouteImport.update({
+  id: '/plan/$id',
+  path: '/plan/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MentorsTopRoute = MentorsTopRouteImport.update({
   id: '/top',
   path: '/top',
@@ -622,6 +628,7 @@ export interface FileRoutesByFullPath {
   '/mentors/find': typeof MentorsFindRoute
   '/mentors/sessions': typeof MentorsSessionsRoute
   '/mentors/top': typeof MentorsTopRoute
+  '/plan/$id': typeof PlanIdRoute
   '/roadmap/ai': typeof RoadmapAiRoute
   '/roadmap/business': typeof RoadmapBusinessRoute
   '/roadmap/creative': typeof RoadmapCreativeRoute
@@ -707,6 +714,7 @@ export interface FileRoutesByTo {
   '/mentors/find': typeof MentorsFindRoute
   '/mentors/sessions': typeof MentorsSessionsRoute
   '/mentors/top': typeof MentorsTopRoute
+  '/plan/$id': typeof PlanIdRoute
   '/roadmap/ai': typeof RoadmapAiRoute
   '/roadmap/business': typeof RoadmapBusinessRoute
   '/roadmap/creative': typeof RoadmapCreativeRoute
@@ -800,6 +808,7 @@ export interface FileRoutesById {
   '/mentors/find': typeof MentorsFindRoute
   '/mentors/sessions': typeof MentorsSessionsRoute
   '/mentors/top': typeof MentorsTopRoute
+  '/plan/$id': typeof PlanIdRoute
   '/roadmap/ai': typeof RoadmapAiRoute
   '/roadmap/business': typeof RoadmapBusinessRoute
   '/roadmap/creative': typeof RoadmapCreativeRoute
@@ -894,6 +903,7 @@ export interface FileRouteTypes {
     | '/mentors/find'
     | '/mentors/sessions'
     | '/mentors/top'
+    | '/plan/$id'
     | '/roadmap/ai'
     | '/roadmap/business'
     | '/roadmap/creative'
@@ -979,6 +989,7 @@ export interface FileRouteTypes {
     | '/mentors/find'
     | '/mentors/sessions'
     | '/mentors/top'
+    | '/plan/$id'
     | '/roadmap/ai'
     | '/roadmap/business'
     | '/roadmap/creative'
@@ -1071,6 +1082,7 @@ export interface FileRouteTypes {
     | '/mentors/find'
     | '/mentors/sessions'
     | '/mentors/top'
+    | '/plan/$id'
     | '/roadmap/ai'
     | '/roadmap/business'
     | '/roadmap/creative'
@@ -1137,6 +1149,7 @@ export interface RootRouteChildren {
   AuthCallbackRoute: typeof AuthCallbackRoute
   CareerSlugRoute: typeof CareerSlugRoute
   DomainSlugRoute: typeof DomainSlugRoute
+  PlanIdRoute: typeof PlanIdRoute
   StreamIdRoute: typeof StreamIdRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -1503,6 +1516,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/roadmap/ai'
       preLoaderRoute: typeof RoadmapAiRouteImport
       parentRoute: typeof RoadmapRoute
+    }
+    '/plan/$id': {
+      id: '/plan/$id'
+      path: '/plan/$id'
+      fullPath: '/plan/$id'
+      preLoaderRoute: typeof PlanIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/mentors/top': {
       id: '/mentors/top'
@@ -1977,6 +1997,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthCallbackRoute: AuthCallbackRoute,
   CareerSlugRoute: CareerSlugRoute,
   DomainSlugRoute: DomainSlugRoute,
+  PlanIdRoute: PlanIdRoute,
   StreamIdRoute: StreamIdRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
