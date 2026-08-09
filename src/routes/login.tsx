@@ -14,7 +14,7 @@ import {
   clearOtpChallenge,
 } from "@/lib/otp-guard.functions";
 
-type LoginSearch = { next?: string };
+type LoginSearch = { next?: string; form?: string };
 
 function sanitizeNext(v: unknown): string | undefined {
   if (typeof v !== "string" || !v.startsWith("/") || v.startsWith("//")) return undefined;
@@ -24,7 +24,9 @@ function sanitizeNext(v: unknown): string | undefined {
 export const Route = createFileRoute("/login")({
   validateSearch: (s: Record<string, unknown>): LoginSearch => ({
     next: sanitizeNext(s.next),
+    form: typeof s.form === "string" ? s.form : undefined,
   }),
+
   head: () => ({
     meta: [
       { title: "Sign in — CareerPilot AI" },

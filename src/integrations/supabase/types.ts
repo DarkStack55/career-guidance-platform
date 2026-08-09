@@ -203,6 +203,36 @@ export type Database = {
         }
         Relationships: []
       }
+      gap_plan_shares: {
+        Row: {
+          candidate_name: string | null
+          created_at: string
+          id: string
+          pdf_path: string | null
+          plan: Json
+          target_role: string
+          user_id: string
+        }
+        Insert: {
+          candidate_name?: string | null
+          created_at?: string
+          id?: string
+          pdf_path?: string | null
+          plan: Json
+          target_role: string
+          user_id: string
+        }
+        Update: {
+          candidate_name?: string | null
+          created_at?: string
+          id?: string
+          pdf_path?: string | null
+          plan?: Json
+          target_role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       interview_sessions: {
         Row: {
           audio_path: string | null

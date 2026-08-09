@@ -4,7 +4,9 @@ import { useDropzone } from "react-dropzone";
 import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowLeft, Upload, Sparkles, Loader2, Plus, Trash2, Target, CheckCircle2, AlertTriangle,
+  FileDown, Copy, Check,
 } from "lucide-react";
+
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -16,6 +18,8 @@ import {
   type ResumeDraft,
   type GapPlan,
 } from "@/lib/resume-builder.functions";
+import { exportGapPlanPdf } from "@/lib/gap-plan-share.functions";
+
 
 export const Route = createFileRoute("/assessment/resume-builder")({
   head: () => ({
@@ -318,7 +322,7 @@ function ResumeBuilderPage() {
               </div>
             </section>
 
-            {plan && <PlanView plan={plan} />}
+            {plan && <PlanView plan={plan} candidateName={draft.fullName} />}
           </>
         )}
       </div>
@@ -377,9 +381,11 @@ const importanceStyle: Record<string, string> = {
   "nice-to-have": "border-border bg-secondary text-muted-foreground",
 };
 
-function PlanView({ plan }: { plan: GapPlan }) {
+function PlanView({ plan, candidateName }: { plan: GapPlan; candidateName: string }) {
   return (
     <div className="space-y-6">
+      <ExportBar plan={plan} candidateName={candidateName} />
+
       <div className="rounded-2xl border border-border bg-card p-6 md:p-8 flex flex-col md:flex-row items-center gap-8">
         <ScoreRing score={plan.readiness_score} label="Readiness" />
         <div className="flex-1">
@@ -463,6 +469,90 @@ function PlanView({ plan }: { plan: GapPlan }) {
             </div>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function ExportBar({ plan, candidateName }: { plan: GapPlan; candidateName: string }) {
+  const exportFn = useServerFn(exportGapPlanPdf);
+  const [working, setWorking] = useState(false);
+  const [share, setShare] = useState<{ url: string; downloadUrl: string | null } | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const run = async () => {
+    setWorking(true);
+    try {
+      const res = (await exportFn({ data: { plan, candidateName } })) as {
+        sharePath: string;
+        downloadUrl: string | null;
+      };
+      const url = `${window.location.origin}${res.sharePath}`;
+      setShare({ url, downloadUrl: res.downloadUrl });
+      if (res.downloadUrl) window.open(res.downloadUrl, "_blank", "noopener");
+      toast.success("PDF ready — share link created.");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setWorking(false);
+    }
+  };
+
+  const copy = async () => {
+    if (!share) return;
+    try {
+      await navigator.clipboard.writeText(share.url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+      toast.success("Share link copied.");
+    } catch {
+      toast.error("Couldn't copy — select and copy the link manually.");
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div>
+        <div className="text-sm font-medium">Export & share this plan</div>
+        <div className="text-xs text-muted-foreground mt-0.5">
+          Download a formatted PDF and get a link anyone can open — no sign-in needed.
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        {share && (
+          <>
+            <input
+              readOnly
+              value={share.url}
+              onFocus={(e) => e.currentTarget.select()}
+              className="w-full md:w-72 rounded-lg border border-border bg-background text-foreground px-3 py-2 text-xs"
+            />
+            <button
+              onClick={copy}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs hover:bg-secondary"
+            >
+              {copied ? <Check className="size-3.5 text-primary" /> : <Copy className="size-3.5" />}
+              {copied ? "Copied" : "Copy link"}
+            </button>
+            {share.downloadUrl && (
+              <a
+                href={share.downloadUrl}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs hover:bg-secondary"
+              >
+                <FileDown className="size-3.5" /> PDF
+              </a>
+            )}
+          </>
+        )}
+        <button
+          onClick={run}
+          disabled={working}
+          className="inline-flex items-center gap-2 rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-semibold disabled:opacity-60"
+        >
+          {working ? <Loader2 className="size-4 animate-spin" /> : <FileDown className="size-4" />}
+          {working ? "Generating…" : share ? "Regenerate" : "Export PDF & share"}
+        </button>
       </div>
     </div>
   );
