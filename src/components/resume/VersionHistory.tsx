@@ -61,7 +61,7 @@ export function VersionHistory({
     let alive = true;
     (async () => {
       try {
-        const rows = (await listFn({ data: {} })) as ResumeVersion[];
+        const rows = (await listFn()) as ResumeVersion[];
         if (alive) setVersions(rows);
       } catch {
         /* history is optional — stay quiet on first load */
