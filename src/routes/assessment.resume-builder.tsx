@@ -292,6 +292,9 @@ function ResumeBuilderPage() {
               </div>
             </section>
 
+            {/* Version history */}
+            <VersionHistory draft={draft} onRestore={(d) => setDraft(d)} />
+
             {/* Step 3 — target + plan */}
             <section className="rounded-2xl border border-border bg-card p-6 md:p-8">
               <div className="flex items-center gap-2 mb-4">
