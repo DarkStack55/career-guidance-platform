@@ -19,6 +19,7 @@ import {
   type GapPlan,
 } from "@/lib/resume-builder.functions";
 import { exportGapPlanPdf } from "@/lib/gap-plan-share.functions";
+import { VersionHistory } from "@/components/resume/VersionHistory";
 
 
 export const Route = createFileRoute("/assessment/resume-builder")({
