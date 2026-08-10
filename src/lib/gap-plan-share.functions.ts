@@ -28,23 +28,47 @@ function normalizePlan(value: unknown): GapPlan {
   };
 }
 
+type Branding = {
+  title: string;
+  subtitle: string;
+  accentColor: string;
+  logoDataUrl: string | null;
+};
+
+function normalizeBranding(value: unknown): Branding {
+  const b = (value ?? {}) as Record<string, unknown>;
+  const str = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
+  const accent = str(b['accentColor'], 9);
+  const logo = typeof b['logoDataUrl'] === "string" ? b['logoDataUrl'] : "";
+  const logoOk =
+    /^data:image\/(png|jpeg);base64,/i.test(logo) && logo.length <= 1_200_000 ? logo : null;
+  return {
+    title: str(b['title'], 80) || "Skill-Gap Analysis & Improvement Plan",
+    subtitle: str(b['subtitle'], 60) || "CareerPilot AI",
+    accentColor: /^#[0-9a-f]{6}$/i.test(accent) ? accent : "#2563eb",
+    logoDataUrl: logoOk,
+  };
+}
+
 /** Renders the plan to PDF, stores it, and creates a shareable record. */
 export const exportGapPlanPdf = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown): { plan: GapPlan; candidateName: string } => {
+  .inputValidator((data: unknown): { plan: GapPlan; candidateName: string; branding: Branding } => {
     const d = (data ?? {}) as Record<string, unknown>;
     const plan = normalizePlan(d['plan']);
     if (!plan.target_role) throw new Error("Generate a plan before exporting");
     return {
       plan,
       candidateName: typeof d['candidateName'] === "string" ? d['candidateName'].trim().slice(0, 120) : "",
+      branding: normalizeBranding(d['branding']),
     };
   })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { buildGapPlanPdf } = await import("@/lib/gap-plan-pdf.server");
 
-    const bytes = await buildGapPlanPdf(data.plan, data.candidateName);
+    const bytes = await buildGapPlanPdf(data.plan, data.candidateName, data.branding);
+
 
     const { data: row, error: insertError } = await supabase
       .from("gap_plan_shares")
