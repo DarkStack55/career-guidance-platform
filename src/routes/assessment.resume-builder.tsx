@@ -4,7 +4,7 @@ import { useDropzone } from "react-dropzone";
 import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowLeft, Upload, Sparkles, Loader2, Plus, Trash2, Target, CheckCircle2, AlertTriangle,
-  FileDown, Copy, Check,
+  FileDown, Copy, Check, Palette,
 } from "lucide-react";
 
 import { toast } from "sonner";
@@ -20,6 +20,7 @@ import {
 } from "@/lib/resume-builder.functions";
 import { exportGapPlanPdf } from "@/lib/gap-plan-share.functions";
 import { VersionHistory } from "@/components/resume/VersionHistory";
+import { BrandingPanel, defaultBranding, type PdfBranding } from "@/components/resume/BrandingPanel";
 
 
 export const Route = createFileRoute("/assessment/resume-builder")({
@@ -481,13 +482,15 @@ function PlanView({ plan, candidateName }: { plan: GapPlan; candidateName: strin
 function ExportBar({ plan, candidateName }: { plan: GapPlan; candidateName: string }) {
   const exportFn = useServerFn(exportGapPlanPdf);
   const [working, setWorking] = useState(false);
+  const [branding, setBranding] = useState<PdfBranding>(defaultBranding);
+  const [showBranding, setShowBranding] = useState(false);
   const [share, setShare] = useState<{ url: string; downloadUrl: string | null } | null>(null);
   const [copied, setCopied] = useState(false);
 
   const run = async () => {
     setWorking(true);
     try {
-      const res = (await exportFn({ data: { plan, candidateName } })) as {
+      const res = (await exportFn({ data: { plan, candidateName, branding } })) as {
         sharePath: string;
         downloadUrl: string | null;
       };
@@ -515,6 +518,7 @@ function ExportBar({ plan, candidateName }: { plan: GapPlan; candidateName: stri
   };
 
   return (
+    <div className="space-y-4">
     <div className="rounded-2xl border border-border bg-card p-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <div>
         <div className="text-sm font-medium">Export & share this plan</div>
@@ -524,6 +528,14 @@ function ExportBar({ plan, candidateName }: { plan: GapPlan; candidateName: stri
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setShowBranding((v) => !v)}
+          aria-expanded={showBranding}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs hover:bg-secondary"
+        >
+          <Palette className="size-3.5" /> {showBranding ? "Hide branding" : "Customize branding"}
+        </button>
         {share && (
           <>
             <input
@@ -558,6 +570,8 @@ function ExportBar({ plan, candidateName }: { plan: GapPlan; candidateName: stri
           {working ? "Generating…" : share ? "Regenerate" : "Export PDF & share"}
         </button>
       </div>
+    </div>
+    {showBranding && <BrandingPanel value={branding} onChange={setBranding} />}
     </div>
   );
 }
