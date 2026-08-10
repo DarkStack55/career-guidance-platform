@@ -19,6 +19,7 @@ import {
   type GapPlan,
 } from "@/lib/resume-builder.functions";
 import { exportGapPlanPdf } from "@/lib/gap-plan-share.functions";
+import { VersionHistory } from "@/components/resume/VersionHistory";
 
 
 export const Route = createFileRoute("/assessment/resume-builder")({
@@ -291,6 +292,9 @@ function ResumeBuilderPage() {
                 />
               </div>
             </section>
+
+            {/* Version history */}
+            <VersionHistory draft={draft} onRestore={(d) => setDraft(d)} />
 
             {/* Step 3 — target + plan */}
             <section className="rounded-2xl border border-border bg-card p-6 md:p-8">

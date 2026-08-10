@@ -509,6 +509,39 @@ export type Database = {
         }
         Relationships: []
       }
+      resume_versions: {
+        Row: {
+          created_at: string
+          draft: Json
+          id: string
+          label: string
+          source: string
+          updated_at: string
+          user_id: string
+          version_number: number
+        }
+        Insert: {
+          created_at?: string
+          draft?: Json
+          id?: string
+          label?: string
+          source?: string
+          updated_at?: string
+          user_id: string
+          version_number?: number
+        }
+        Update: {
+          created_at?: string
+          draft?: Json
+          id?: string
+          label?: string
+          source?: string
+          updated_at?: string
+          user_id?: string
+          version_number?: number
+        }
+        Relationships: []
+      }
       saved_careers: {
         Row: {
           career_slug: string
