@@ -32,14 +32,55 @@ function wrap(text: string, font: PDFFont, size: number, maxWidth: number): stri
   return lines.length ? lines : [""];
 }
 
-export async function buildGapPlanPdf(plan: GapPlan, candidateName: string): Promise<Uint8Array> {
+export type PdfBranding = {
+  title: string;
+  subtitle: string;
+  accentColor: string;
+  logoDataUrl: string | null;
+};
+
+export const defaultPdfBranding: PdfBranding = {
+  title: "Skill-Gap Analysis & Improvement Plan",
+  subtitle: "CareerPilot AI",
+  accentColor: "#2563eb",
+  logoDataUrl: null,
+};
+
+function hexToRgb(hex: string) {
+  const m = /^#?([0-9a-f]{6})$/i.exec((hex ?? "").trim());
+  if (!m) return rgb(0.15, 0.39, 0.92);
+  const n = parseInt(m[1]!, 16);
+  return rgb(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255);
+}
+
+function decodeDataUrl(dataUrl: string): { bytes: Uint8Array; type: "png" | "jpg" } | null {
+  const m = /^data:image\/(png|jpeg);base64,([\s\S]+)$/i.exec(dataUrl.trim());
+  if (!m) return null;
+  try {
+    const bin = atob(m[2]!.replace(/\s/g, ""));
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return { bytes, type: m[1]!.toLowerCase() === "png" ? "png" : "jpg" };
+  } catch {
+    return null;
+  }
+}
+
+export async function buildGapPlanPdf(
+  plan: GapPlan,
+  candidateName: string,
+  branding: PdfBranding = defaultPdfBranding,
+): Promise<Uint8Array> {
   const pdf = await PDFDocument.create();
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
 
+  const brandTitle = branding.title?.trim() || defaultPdfBranding.title;
+  const brandSubtitle = branding.subtitle?.trim() || defaultPdfBranding.subtitle;
+
   const ink = rgb(0.07, 0.09, 0.13);
   const muted = rgb(0.42, 0.46, 0.53);
-  const accent = rgb(0.15, 0.39, 0.92);
+  const accent = hexToRgb(branding.accentColor);
 
   let page: PDFPage = pdf.addPage([PAGE_W, PAGE_H]);
   let y = PAGE_H - MARGIN;
@@ -78,9 +119,28 @@ export async function buildGapPlanPdf(plan: GapPlan, candidateName: string): Pro
     y -= 8;
   };
 
-  // Header
-  text("CareerPilot AI", { size: 10, f: bold, color: muted, gap: 8 });
-  text("Skill-Gap Analysis & Improvement Plan", { size: 22, f: bold });
+  // Header (optional logo)
+  if (branding.logoDataUrl) {
+    const decoded = decodeDataUrl(branding.logoDataUrl);
+    if (decoded) {
+      try {
+        const img =
+          decoded.type === "png" ? await pdf.embedPng(decoded.bytes) : await pdf.embedJpg(decoded.bytes);
+        const maxH = 40;
+        const maxW = 150;
+        const scale = Math.min(maxW / img.width, maxH / img.height, 1);
+        const w = img.width * scale;
+        const h = img.height * scale;
+        page.drawImage(img, { x: MARGIN, y: y - h, width: w, height: h });
+        y -= h + 14;
+      } catch {
+        // ignore unreadable logo, keep text header
+      }
+    }
+  }
+
+  text(brandSubtitle, { size: 10, f: bold, color: muted, gap: 8 });
+  text(brandTitle, { size: 22, f: bold });
   text(
     `${candidateName ? `${candidateName} · ` : ""}Target role: ${plan.target_role} · ${new Date().toLocaleDateString()}`,
     { size: 10, color: muted, gap: 6 },
@@ -141,7 +201,7 @@ export async function buildGapPlanPdf(plan: GapPlan, candidateName: string): Pro
   // Footer on every page
   const pages = pdf.getPages();
   pages.forEach((p, i) => {
-    p.drawText(`CareerPilot AI · page ${i + 1} of ${pages.length}`, {
+    p.drawText(`${brandSubtitle} · page ${i + 1} of ${pages.length}`, {
       x: MARGIN,
       y: 28,
       size: 8,
