@@ -172,9 +172,13 @@ export async function buildGapPlanPdf(
   if (plan.gaps.length) {
     heading("Priority skill gaps");
     for (const g of plan.gaps) {
-      text(`${g.skill}  [${g.importance}]`, { size: 11.5, f: bold });
+      text(`${g.skill}  [${g.importance}]${g.estimated_weeks ? `  ~${g.estimated_weeks} weeks` : ""}`, { size: 11.5, f: bold });
       if (g.why) text(g.why, { size: 10, color: muted, indent: 10 });
-      if (g.how) text(`How to close it: ${g.how}`, { size: 10, indent: 10, gap: 6 });
+      if (g.how) text(`How to close it: ${g.how}`, { size: 10, indent: 10, gap: g.actions?.length ? 2 : 6 });
+      for (const a of g.actions ?? []) {
+        text(`• ${a.timeline ? `${a.timeline}: ` : ""}${a.action}`, { size: 10, indent: 18 });
+      }
+      if (g.actions?.length) text("", { size: 2, gap: 4 });
     }
   }
 
