@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Download, Loader2, ArrowRight } from "lucide-react";
+import { Download, Loader2, ArrowRight, CalendarPlus } from "lucide-react";
 import { ScoreRing } from "@/components/ScoreRing";
 import { getSharedGapPlan } from "@/lib/gap-plan-share.functions";
+import { downloadGapPlanIcs } from "@/lib/gap-plan-ics";
+
 
 export const Route = createFileRoute("/plan/$id")({
   head: () => ({
@@ -83,14 +85,24 @@ function SharedPlanPage() {
               <span key={s} className="text-xs rounded-full border border-border bg-secondary px-3 py-1">{s}</span>
             ))}
           </div>
-          {data.pdfUrl && (
-            <a
-              href={data.pdfUrl}
-              className="mt-5 inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm hover:bg-secondary"
+          <div className="mt-5 flex flex-wrap gap-2">
+            {data.pdfUrl && (
+              <a
+                href={data.pdfUrl}
+                className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm hover:bg-secondary"
+              >
+                <Download className="size-4" /> Download PDF
+              </a>
+            )}
+            <button
+              type="button"
+              onClick={() => downloadGapPlanIcs(plan)}
+              className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm hover:bg-secondary"
             >
-              <Download className="size-4" /> Download PDF
-            </a>
-          )}
+              <CalendarPlus className="size-4" /> Add milestones to calendar
+            </button>
+          </div>
+
         </div>
       </div>
 

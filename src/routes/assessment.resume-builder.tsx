@@ -4,7 +4,7 @@ import { useDropzone } from "react-dropzone";
 import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowLeft, Upload, Sparkles, Loader2, Plus, Trash2, Target, CheckCircle2, AlertTriangle,
-  FileDown, Copy, Check, Palette,
+  FileDown, Copy, Check, Palette, CalendarPlus,
 } from "lucide-react";
 
 import { toast } from "sonner";
@@ -19,6 +19,8 @@ import {
   type GapPlan,
 } from "@/lib/resume-builder.functions";
 import { exportGapPlanPdf } from "@/lib/gap-plan-share.functions";
+import { downloadGapPlanIcs } from "@/lib/gap-plan-ics";
+
 import { VersionHistory } from "@/components/resume/VersionHistory";
 import { BrandingPanel, defaultBranding, type PdfBranding } from "@/components/resume/BrandingPanel";
 
@@ -542,11 +544,25 @@ function ExportBar({ plan, candidateName }: { plan: GapPlan; candidateName: stri
       <div>
         <div className="text-sm font-medium">Export & share this plan</div>
         <div className="text-xs text-muted-foreground mt-0.5">
-          Download a formatted PDF and get a link anyone can open — no sign-in needed.
+          Download a formatted PDF, add milestones to your calendar, and get a link anyone can open.
         </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            try {
+              downloadGapPlanIcs(plan);
+              toast.success("Calendar file downloaded — import it into your calendar app.");
+            } catch {
+              toast.error("Couldn't build the calendar file.");
+            }
+          }}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs hover:bg-secondary"
+        >
+          <CalendarPlus className="size-3.5" /> Add to calendar (.ics)
+        </button>
         <button
           type="button"
           onClick={() => setShowBranding((v) => !v)}
@@ -555,6 +571,7 @@ function ExportBar({ plan, candidateName }: { plan: GapPlan; candidateName: stri
         >
           <Palette className="size-3.5" /> {showBranding ? "Hide branding" : "Customize branding"}
         </button>
+
         {share && (
           <>
             <input
