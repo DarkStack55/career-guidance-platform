@@ -21,7 +21,14 @@ export type GapPlan = {
   readiness_score: number;
   verdict: string;
   matched_skills: string[];
-  gaps: Array<{ skill: string; importance: "critical" | "important" | "nice-to-have"; why: string; how: string }>;
+  gaps: Array<{
+    skill: string;
+    importance: "critical" | "important" | "nice-to-have";
+    why: string;
+    how: string;
+    estimated_weeks?: number;
+    actions?: Array<{ action: string; timeline: string }>;
+  }>;
   phases: Array<{ phase: string; timeframe: string; focus: string[]; actions: string[] }>;
   resume_rewrites: string[];
   suggested_roles: string[];
