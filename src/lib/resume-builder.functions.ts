@@ -210,24 +210,38 @@ Return JSON with EXACTLY this shape:
   "readiness_score": 0-100,
   "verdict": "2-3 sentence honest assessment",
   "matched_skills": ["skills they already have that the role needs"],
-  "gaps": [{"skill":"","importance":"critical|important|nice-to-have","why":"","how":"one concrete way to close it"}],
+  "gaps": [{"skill":"","importance":"critical|important|nice-to-have","why":"","how":"one concrete way to close it","estimated_weeks":0,"actions":[{"action":"specific, tailored step for THIS candidate","timeline":"e.g. Weeks 1-3"}]}],
   "phases": [{"phase":"","timeframe":"","focus":["..."],"actions":["..."]}],
   "resume_rewrites": ["concrete rewrite instruction tied to this target role"],
   "suggested_roles": ["realistic adjacent roles"]
 }
 
-Rules: 4-8 gaps, 3-4 phases spanning the full ${data.timeframeMonths} months, 3-5 resume_rewrites, 3 suggested_roles. Be specific to the candidate's actual background.`,
+Rules: 4-8 gaps, 3-4 phases spanning the full ${data.timeframeMonths} months, 3-5 resume_rewrites, 3 suggested_roles. Every gap MUST include estimated_weeks (realistic total weeks to close it, fitting inside ${data.timeframeMonths} months) and 2-3 actions, each with a concrete tailored action and a "Weeks X-Y" timeline. Sequence critical gaps earliest. Be specific to the candidate's actual background.`,
     );
     const parsed = safeJson<Omit<GapPlan, "target_role">>(raw);
     if (!parsed || typeof parsed.readiness_score !== "number") {
       throw new Error("AI returned an unreadable response. Please try again.");
     }
+    const maxWeeks = data.timeframeMonths * 4;
+    const gaps = (parsed.gaps ?? []).map((g) => {
+      const w = Number(g?.estimated_weeks);
+      return {
+        ...g,
+        estimated_weeks: Number.isFinite(w) && w > 0 ? Math.min(maxWeeks, Math.round(w)) : undefined,
+        actions: Array.isArray(g?.actions)
+          ? g.actions
+              .filter((a) => a && typeof a.action === "string" && a.action.trim())
+              .slice(0, 4)
+              .map((a) => ({ action: a.action.trim(), timeline: typeof a.timeline === "string" ? a.timeline.trim() : "" }))
+          : [],
+      };
+    });
     return {
       target_role: data.targetRole,
       readiness_score: Math.max(0, Math.min(100, Math.round(parsed.readiness_score))),
       verdict: parsed.verdict ?? "",
       matched_skills: parsed.matched_skills ?? [],
-      gaps: parsed.gaps ?? [],
+      gaps,
       phases: parsed.phases ?? [],
       resume_rewrites: parsed.resume_rewrites ?? [],
       suggested_roles: parsed.suggested_roles ?? [],
