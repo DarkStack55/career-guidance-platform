@@ -19,6 +19,8 @@ import {
   type GapPlan,
 } from "@/lib/resume-builder.functions";
 import { exportGapPlanPdf } from "@/lib/gap-plan-share.functions";
+import { downloadGapPlanIcs } from "@/lib/gap-plan-ics";
+
 import { VersionHistory } from "@/components/resume/VersionHistory";
 import { BrandingPanel, defaultBranding, type PdfBranding } from "@/components/resume/BrandingPanel";
 
