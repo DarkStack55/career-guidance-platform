@@ -416,15 +416,34 @@ function PlanView({ plan, candidateName }: { plan: GapPlan; candidateName: strin
             <div key={g.skill} className="rounded-2xl border border-border bg-card p-5">
               <div className="flex items-center justify-between gap-3 mb-2">
                 <div className="font-medium">{g.skill}</div>
-                <span className={`text-[10px] uppercase tracking-wider rounded-full border px-2 py-0.5 ${importanceStyle[g.importance] ?? importanceStyle["nice-to-have"]}`}>
-                  {g.importance}
-                </span>
+                <div className="flex items-center gap-2">
+                  {g.estimated_weeks ? (
+                    <span className="text-[10px] font-mono rounded-full border border-border bg-secondary px-2 py-0.5 text-muted-foreground">
+                      ~{g.estimated_weeks}w
+                    </span>
+                  ) : null}
+                  <span className={`text-[10px] uppercase tracking-wider rounded-full border px-2 py-0.5 ${importanceStyle[g.importance] ?? importanceStyle["nice-to-have"]}`}>
+                    {g.importance}
+                  </span>
+                </div>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed mb-2">{g.why}</p>
               <p className="text-xs text-foreground/80 leading-relaxed">
                 <AlertTriangle className="inline size-3 mr-1 text-primary" />
                 {g.how}
               </p>
+              {g.actions && g.actions.length > 0 && (
+                <ul className="mt-3 space-y-2 border-t border-border pt-3">
+                  {g.actions.map((a, i) => (
+                    <li key={i} className="flex items-start gap-2 text-xs">
+                      <span className="mt-0.5 shrink-0 rounded-full bg-primary/10 text-primary font-mono text-[10px] px-2 py-0.5">
+                        {a.timeline || `Step ${i + 1}`}
+                      </span>
+                      <span className="text-foreground/80 leading-relaxed">{a.action}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           ))}
         </div>
