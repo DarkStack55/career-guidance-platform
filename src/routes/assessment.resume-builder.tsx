@@ -4,7 +4,7 @@ import { useDropzone } from "react-dropzone";
 import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowLeft, Upload, Sparkles, Loader2, Plus, Trash2, Target, CheckCircle2, AlertTriangle,
-  FileDown, Copy, Check, Palette,
+  FileDown, Copy, Check, Palette, CalendarPlus,
 } from "lucide-react";
 
 import { toast } from "sonner";
