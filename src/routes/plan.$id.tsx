@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Download, Loader2, ArrowRight } from "lucide-react";
+import { Download, Loader2, ArrowRight, CalendarPlus } from "lucide-react";
 import { ScoreRing } from "@/components/ScoreRing";
 import { getSharedGapPlan } from "@/lib/gap-plan-share.functions";
+import { downloadGapPlanIcs } from "@/lib/gap-plan-ics";
+
 
 export const Route = createFileRoute("/plan/$id")({
   head: () => ({
