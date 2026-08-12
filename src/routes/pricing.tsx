@@ -1,7 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { PageHero } from "@/components/PageHero";
-import { Check, ArrowRight } from "lucide-react";
+import { Check, ArrowRight, Loader2 } from "lucide-react";
+import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
+import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -46,6 +49,7 @@ const plans = [
     ],
     cta: "Upgrade to Pro",
     to: "/contact",
+    priceId: "pro_monthly",
   },
   {
     name: "Mentor+",
@@ -59,12 +63,30 @@ const plans = [
       "Personal roadmap check-ins",
       "Referral introductions where available",
     ],
-    cta: "Talk to us",
+    cta: "Get Mentor+",
     to: "/mentors",
+    priceId: "mentor_plus_monthly",
   },
 ];
 
 function Pricing() {
+  const { openCheckout, loading } = usePaddleCheckout();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const buy = (priceId: string) => {
+    if (!user) {
+      navigate({ to: "/login" });
+      return;
+    }
+    openCheckout({
+      priceId,
+      customerEmail: user.email ?? undefined,
+      customData: { userId: user.id },
+      successUrl: `${window.location.origin}/dashboard?checkout=success`,
+    });
+  };
+
   return (
     <>
       <PageHero
@@ -74,6 +96,7 @@ function Pricing() {
       />
 
       <section className="max-w-6xl mx-auto px-6 py-16">
+        <div className="mb-8"><PaymentTestModeBanner /></div>
         <div className="grid md:grid-cols-3 gap-5 items-start">
           {plans.map((p, i) => (
             <motion.div
@@ -102,21 +125,38 @@ function Pricing() {
                   </li>
                 ))}
               </ul>
-              <Link
-                to={p.to}
-                className={`mt-7 w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-opacity hover:opacity-90 ${
-                  p.highlight
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-foreground/10 border border-border text-foreground"
-                }`}
-              >
-                {p.cta} <ArrowRight className="size-3" />
-              </Link>
+              {p.priceId ? (
+                <button
+                  type="button"
+                  onClick={() => buy(p.priceId!)}
+                  disabled={loading}
+                  className={`mt-7 w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-opacity hover:opacity-90 disabled:opacity-60 ${
+                    p.highlight
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-foreground/10 border border-border text-foreground"
+                  }`}
+                >
+                  {loading ? <Loader2 className="size-3 animate-spin" /> : null}
+                  {p.cta} <ArrowRight className="size-3" />
+                </button>
+              ) : (
+                <Link
+                  to={p.to}
+                  className={`mt-7 w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-opacity hover:opacity-90 ${
+                    p.highlight
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-foreground/10 border border-border text-foreground"
+                  }`}
+                >
+                  {p.cta} <ArrowRight className="size-3" />
+                </Link>
+              )}
             </motion.div>
           ))}
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-8">
+          Pay by UPI, cards, net banking or wallets — handled securely at checkout.<br />
           Student pricing available — <Link to="/contact" className="text-primary font-semibold">contact us</Link> with your institution email.
         </p>
       </section>
