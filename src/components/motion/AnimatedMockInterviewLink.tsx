@@ -14,7 +14,7 @@ export function AnimatedMockInterviewLink() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Try the AI Mock Interview on an external site (opens in a new tab)"
-      className="group relative block overflow-hidden rounded-2xl border border-primary/30 bg-primary/5 p-5 backdrop-blur-sm transition-colors duration-300 hover:border-primary/60 hover:bg-primary/[0.08] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      className="group relative mb-5 block overflow-hidden rounded-2xl border border-primary/30 bg-primary/5 p-5 backdrop-blur-sm transition-colors duration-300 hover:border-primary/60 hover:bg-primary/[0.08] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
