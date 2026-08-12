@@ -22,6 +22,7 @@ import { CaptionsDrawer, type CaptionLine } from "@/components/interview-room/Ca
 import { DeviceErrorModal } from "@/components/interview-room/DeviceErrorModal";
 import { VoicePicker } from "@/components/interview-room/VoicePicker";
 import { AnimatedMockInterviewLink } from "@/components/motion/AnimatedMockInterviewLink";
+import { DebriefPanel } from "@/components/interview-room/DebriefPanel";
 import { TRACKS } from "@/lib/mock-interview-data";
 import {
   buildQuestionQueue,
