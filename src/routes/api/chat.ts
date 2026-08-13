@@ -84,6 +84,17 @@ export const Route = createFileRoute("/api/chat")({
           // ---- Enforce server-side per-user daily quota via service role ----
           // (RLS on public.chat_usage is enabled; only service_role writes.)
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+          // Paying subscribers get unlimited Zoiee counselling.
+          const paymentsEnv = (import.meta.env.VITE_PAYMENTS_CLIENT_TOKEN as string | undefined)
+            ?.startsWith("test_")
+            ? "sandbox"
+            : "live";
+          const { data: isSubscriber } = await supabaseAdmin.rpc("has_active_subscription", {
+            user_uuid: userId,
+            check_env: paymentsEnv,
+          });
+
           const today = new Date().toISOString().slice(0, 10); // UTC yyyy-mm-dd
           const { data: usageRow, error: usageErr } = await supabaseAdmin
             .from("chat_usage")
@@ -96,10 +107,10 @@ export const Route = createFileRoute("/api/chat")({
             return jsonError(500, "Usage check failed");
           }
           const current = usageRow?.count ?? 0;
-          if (current >= DAILY_LIMIT) {
+          if (!isSubscriber && current >= DAILY_LIMIT) {
             return jsonError(
               429,
-              `Daily limit reached (${DAILY_LIMIT} messages). Please try again tomorrow.`,
+              `Daily limit reached (${DAILY_LIMIT} messages). Upgrade to Pro for unlimited Zoiee counselling.`,
             );
           }
           // Reserve one request BEFORE calling the paid gateway.

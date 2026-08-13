@@ -1,10 +1,16 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { useState } from "react";
+import { toast } from "sonner";
 import { PageHero } from "@/components/PageHero";
 import { Check, ArrowRight, Loader2 } from "lucide-react";
 import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
+import { SubscriptionBanner } from "@/components/SubscriptionBanner";
 import { useAuth } from "@/hooks/use-auth";
+import { useSubscription } from "@/hooks/useSubscription";
+import { getPaddleEnvironment } from "@/lib/paddle";
+import { changeSubscriptionPlan, createBillingPortalSession } from "@/lib/subscription.functions";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -50,6 +56,7 @@ const plans = [
     cta: "Upgrade to Pro",
     to: "/contact",
     priceId: "pro_monthly",
+    productId: "pro_plan",
   },
   {
     name: "Mentor+",

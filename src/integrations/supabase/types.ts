@@ -727,6 +727,10 @@ export type Database = {
         Args: { check_env?: string; user_uuid: string }
         Returns: boolean
       }
+      has_plan: {
+        Args: { check_env?: string; plan_product_id: string; user_uuid: string }
+        Returns: boolean
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
