@@ -138,7 +138,30 @@ function Pricing() {
       />
 
       <section className="max-w-6xl mx-auto px-6 py-16">
-        <div className="mb-8"><PaymentTestModeBanner /></div>
+        <div className="mb-8 space-y-3">
+          <PaymentTestModeBanner />
+          <SubscriptionBanner />
+          {isActive && (
+            <div className="glass rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-sm">
+              <span className="text-muted-foreground">
+                You&apos;re on{" "}
+                <span className="font-semibold text-foreground">
+                  {plan === "mentor_plus_plan" ? "Mentor+" : "Pro"}
+                </span>
+                . Cancelling ends access straight away.
+              </span>
+              <button
+                type="button"
+                onClick={manageBilling}
+                disabled={busy === "portal"}
+                className="px-4 py-2 rounded-lg text-xs font-bold bg-foreground/10 border border-border text-foreground hover:opacity-90 disabled:opacity-60 flex items-center gap-1.5"
+              >
+                {busy === "portal" ? <Loader2 className="size-3 animate-spin" /> : null}
+                Manage billing
+              </button>
+            </div>
+          )}
+        </div>
         <div className="grid md:grid-cols-3 gap-5 items-start">
           {plans.map((p, i) => (
             <motion.div
