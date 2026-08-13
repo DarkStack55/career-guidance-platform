@@ -1,10 +1,16 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { useState } from "react";
+import { toast } from "sonner";
 import { PageHero } from "@/components/PageHero";
 import { Check, ArrowRight, Loader2 } from "lucide-react";
 import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
+import { SubscriptionBanner } from "@/components/SubscriptionBanner";
 import { useAuth } from "@/hooks/use-auth";
+import { useSubscription } from "@/hooks/useSubscription";
+import { getPaddleEnvironment } from "@/lib/paddle";
+import { changeSubscriptionPlan, createBillingPortalSession } from "@/lib/subscription.functions";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -50,6 +56,7 @@ const plans = [
     cta: "Upgrade to Pro",
     to: "/contact",
     priceId: "pro_monthly",
+    productId: "pro_plan",
   },
   {
     name: "Mentor+",
@@ -66,6 +73,7 @@ const plans = [
     cta: "Get Mentor+",
     to: "/mentors",
     priceId: "mentor_plus_monthly",
+    productId: "mentor_plus_plan",
   },
 ];
 
@@ -73,18 +81,52 @@ function Pricing() {
   const { openCheckout, loading } = usePaddleCheckout();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { plan, isActive, refresh } = useSubscription();
+  const [busy, setBusy] = useState<string | null>(null);
 
-  const buy = (priceId: string) => {
+  const buy = async (priceId: string, productId: string) => {
     if (!user) {
       navigate({ to: "/login" });
       return;
     }
+
+    // Already subscribed → switch plans immediately with pro-rated billing.
+    if (isActive && plan !== "free" && plan !== productId) {
+      setBusy(productId);
+      try {
+        await changeSubscriptionPlan({
+          data: { priceId, environment: getPaddleEnvironment() },
+        });
+        toast.success("Plan updated — the difference is pro-rated on your next invoice.");
+        refresh();
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Could not change your plan");
+      } finally {
+        setBusy(null);
+      }
+      return;
+    }
+
     openCheckout({
       priceId,
       customerEmail: user.email ?? undefined,
       customData: { userId: user.id },
       successUrl: `${window.location.origin}/dashboard?checkout=success`,
     });
+  };
+
+  const manageBilling = async () => {
+    setBusy("portal");
+    try {
+      const { url } = await createBillingPortalSession({
+        data: { environment: getPaddleEnvironment() },
+      });
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not open billing");
+    } finally {
+      setBusy(null);
+    }
   };
 
   return (
@@ -96,7 +138,30 @@ function Pricing() {
       />
 
       <section className="max-w-6xl mx-auto px-6 py-16">
-        <div className="mb-8"><PaymentTestModeBanner /></div>
+        <div className="mb-8 space-y-3">
+          <PaymentTestModeBanner />
+          <SubscriptionBanner />
+          {isActive && (
+            <div className="glass rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-sm">
+              <span className="text-muted-foreground">
+                You&apos;re on{" "}
+                <span className="font-semibold text-foreground">
+                  {plan === "mentor_plus_plan" ? "Mentor+" : "Pro"}
+                </span>
+                . Cancelling ends access straight away.
+              </span>
+              <button
+                type="button"
+                onClick={manageBilling}
+                disabled={busy === "portal"}
+                className="px-4 py-2 rounded-lg text-xs font-bold bg-foreground/10 border border-border text-foreground hover:opacity-90 disabled:opacity-60 flex items-center gap-1.5"
+              >
+                {busy === "portal" ? <Loader2 className="size-3 animate-spin" /> : null}
+                Manage billing
+              </button>
+            </div>
+          )}
+        </div>
         <div className="grid md:grid-cols-3 gap-5 items-start">
           {plans.map((p, i) => (
             <motion.div
@@ -128,16 +193,21 @@ function Pricing() {
               {p.priceId ? (
                 <button
                   type="button"
-                  onClick={() => buy(p.priceId!)}
-                  disabled={loading}
+                  onClick={() => buy(p.priceId!, p.productId!)}
+                  disabled={loading || busy === p.productId || plan === p.productId}
                   className={`mt-7 w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-opacity hover:opacity-90 disabled:opacity-60 ${
                     p.highlight
                       ? "bg-primary text-primary-foreground"
                       : "bg-foreground/10 border border-border text-foreground"
                   }`}
                 >
-                  {loading ? <Loader2 className="size-3 animate-spin" /> : null}
-                  {p.cta} <ArrowRight className="size-3" />
+                  {loading || busy === p.productId ? <Loader2 className="size-3 animate-spin" /> : null}
+                  {plan === p.productId
+                    ? "Current plan"
+                    : isActive && plan !== "free"
+                      ? `Switch to ${p.name}`
+                      : p.cta}
+                  {plan === p.productId ? null : <ArrowRight className="size-3" />}
                 </button>
               ) : (
                 <Link
