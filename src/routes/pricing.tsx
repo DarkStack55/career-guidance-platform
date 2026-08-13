@@ -73,6 +73,7 @@ const plans = [
     cta: "Get Mentor+",
     to: "/mentors",
     priceId: "mentor_plus_monthly",
+    productId: "mentor_plus_plan",
   },
 ];
 
@@ -80,18 +81,52 @@ function Pricing() {
   const { openCheckout, loading } = usePaddleCheckout();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { plan, isActive, refresh } = useSubscription();
+  const [busy, setBusy] = useState<string | null>(null);
 
-  const buy = (priceId: string) => {
+  const buy = async (priceId: string, productId: string) => {
     if (!user) {
       navigate({ to: "/login" });
       return;
     }
+
+    // Already subscribed → switch plans immediately with pro-rated billing.
+    if (isActive && plan !== "free" && plan !== productId) {
+      setBusy(productId);
+      try {
+        await changeSubscriptionPlan({
+          data: { priceId, environment: getPaddleEnvironment() },
+        });
+        toast.success("Plan updated — the difference is pro-rated on your next invoice.");
+        refresh();
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Could not change your plan");
+      } finally {
+        setBusy(null);
+      }
+      return;
+    }
+
     openCheckout({
       priceId,
       customerEmail: user.email ?? undefined,
       customData: { userId: user.id },
       successUrl: `${window.location.origin}/dashboard?checkout=success`,
     });
+  };
+
+  const manageBilling = async () => {
+    setBusy("portal");
+    try {
+      const { url } = await createBillingPortalSession({
+        data: { environment: getPaddleEnvironment() },
+      });
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not open billing");
+    } finally {
+      setBusy(null);
+    }
   };
 
   return (
