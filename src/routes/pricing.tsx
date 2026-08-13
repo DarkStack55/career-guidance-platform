@@ -193,16 +193,21 @@ function Pricing() {
               {p.priceId ? (
                 <button
                   type="button"
-                  onClick={() => buy(p.priceId!)}
-                  disabled={loading}
+                  onClick={() => buy(p.priceId!, p.productId!)}
+                  disabled={loading || busy === p.productId || plan === p.productId}
                   className={`mt-7 w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-opacity hover:opacity-90 disabled:opacity-60 ${
                     p.highlight
                       ? "bg-primary text-primary-foreground"
                       : "bg-foreground/10 border border-border text-foreground"
                   }`}
                 >
-                  {loading ? <Loader2 className="size-3 animate-spin" /> : null}
-                  {p.cta} <ArrowRight className="size-3" />
+                  {loading || busy === p.productId ? <Loader2 className="size-3 animate-spin" /> : null}
+                  {plan === p.productId
+                    ? "Current plan"
+                    : isActive && plan !== "free"
+                      ? `Switch to ${p.name}`
+                      : p.cta}
+                  {plan === p.productId ? null : <ArrowRight className="size-3" />}
                 </button>
               ) : (
                 <Link
